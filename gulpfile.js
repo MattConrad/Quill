@@ -3,6 +3,7 @@
 
 var gulp = require("gulp"),
   rimraf = require("rimraf"),
+  shell = require("gulp-shell"),
   concat = require("gulp-concat"),
   cssmin = require("gulp-cssmin"),
   uglify = require("gulp-uglify");
@@ -17,6 +18,9 @@ var paths = {
   concatJsDest: webroot + "js/site.min.js",
   concatCssDest: webroot + "css/site.min.css"
 };
+
+//2016-04-21: right now, VSCode won't target .NET Core, so dnx-watch is usless to me: https://github.com/OmniSharp/omnisharp-vscode/issues/88
+//gulp.task('watch', shell.task(['dnx-watch web']))
 
 gulp.task("clean:js", function (cb) {
   rimraf(paths.concatJsDest, cb);
