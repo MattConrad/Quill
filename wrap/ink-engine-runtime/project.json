@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0-*",
+  "frameworks": {
+    "dnxcore50": {
+      "bin": {
+        "assembly": "c:/work/ink/Quill/lib/ink-engine-runtime.dll",
+        "pdb": "c:/work/ink/Quill/lib/ink-engine-runtime.pdb"
+      }
+    }
+  }
+}
