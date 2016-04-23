@@ -11,17 +11,13 @@ body {
 }
 
 /* Set widths on the form inputs since otherwise they're 100% wide */
+/*
 input,
 select,
 textarea {
     max-width: 280px;
 }
-
-/* Carousel */
-.carousel-caption p {
-    font-size: 20px;
-    line-height: 1.4;
-}
+*/
 
 
 /*
@@ -30,6 +26,16 @@ textarea {
 
 */
 
+#ink-div {
+    height: 600px;
+}
+
+#inktext {
+    height: 100%;
+    width: 100%;
+    font-family: "Courier New", Courier, monospace;
+}
+
 #story-main-div, #story-choices-div {
     height: 600px;
     overflow-y: auto;
@@ -37,4 +43,8 @@ textarea {
 
 #story-main-div p.new-text {
     font-weight: bold;
+}
+
+.centered {
+    text-align: center;
 }

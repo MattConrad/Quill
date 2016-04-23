@@ -19,6 +19,11 @@ namespace Quill.Controllers
         
         public IActionResult Index()
         {
+            return View();
+        }
+        
+        public IActionResult OrigIndex()
+        {
             if (StoryDictionary == null) InitStoryDict();
 
             if (StoryDictionary.Count == 0) throw new InvalidOperationException("MWCTODO: invite them to init the application");

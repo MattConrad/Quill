@@ -1,0 +1,15 @@
+@model Dictionary<int, string>
+
+@{
+    ViewBag.Title = "Quill -- Read and Write Ink Stories";
+}
+
+<br />
+<p>Choose a story:</p>
+
+@foreach (int key in Model.Keys)
+{
+    <p><a href="@Url.Content("~/Ink/Story/")?storyId=@key">@Model[key]</a></p>
+}
+
+

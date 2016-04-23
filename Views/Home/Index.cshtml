@@ -1,15 +1,135 @@
-@model Dictionary<int, string>
+@model object
+@* //@model Quill.Models.StoryStartupTuple *@
 
 @{
-    ViewBag.Title = "Quill -- Read and Write Ink Stories";
+    //MWCTODO: restore this.
+    //ViewBag.Title = Model.StoryTitle;
 }
 
+@* MWCTODO: we want to move this off to a .js file in due course *@
+
+@section scripts {
+
+<script type="text/javascript">
+    var playInkUrl = '@Url.Content("~/Home/PlayInk")';
+    var continueStoryUrl = '@Url.Content("~/Ink/ContinueStory")';
+    var storyId = null;
+    @* var storyId = @Model.StoryId; *@
+    var storyStateGuid = null;
+    @* var storyStateGuid = '@Model.StoryStateGuid.ToString()'; *@
+    var replayChoices = [];
+
+    var $storyMainDiv;
+    var $storyChoicesDiv;
+    var $storyMainStatusDiv;
+    var $storyChoicesStatusDiv;
+
+    $(document).ready(function () {
+        $storyMainDiv = $("#story-main-div");
+        $storyChoicesDiv = $("#story-choices-div");
+        $storyMainStatusDiv = $("#story-main-div");
+        $storyChoicesStatusDiv = $("#story-choices-div");
+
+        $storyChoicesDiv.on('click', '.story-choice-link', function () {
+            $storyChoicesDiv.empty();
+            continueStory($(this).data('cindex'));
+            return false;
+        })
+        
+        $("#start-fresh-button").click(function() { replayChoices = []; playInk(); });
+        $("#replay-button").click(playInk);
+
+        //continueStory();
+    });
+    
+    function playInk() {
+        //MWCTODO: validate that the textarea isn't just whitespace. can probably silently ignore button click if it is.
+        $.post(
+            playInkUrl,
+            { "inktext": $("#inktext").val() },
+            function(results) {
+                if (results.errors) {
+                    //MWCTODO: maybe we should actually tell the users there were errors.
+                    console.log(results.errors);
+                } else {
+                    storyId = results.storyId;
+                    storyStateGuid = results.storyStateGuid;
+
+                    var replays = replayChoices.slice();
+                    continueStory(null, replays);
+                }
+            }
+        )
+    }
+
+    function continueStory(choiceIndex, replays) {
+        $("#story-main-div p.new-text").removeClass("new-text");
+
+        $.getJSON(
+            continueStoryUrl,
+            //the server accepts "path", but we don't support it here, now.
+            { "storyId": storyId, "storyStateGuid": storyStateGuid, "choiceIndex": choiceIndex, "path": null },
+            function (messages) {
+                var currentChoices = processStoryMessages(messages);
+                if (replays && replays.length > 0 && currentChoices.length > 0) {
+                    var nextChoice = replays.shift();
+                    //they might have changed the story and invalidated a formerly valid choice. we probably ought to truncate replayChoices to the last valid choice...
+                    if (currentChoices.indexOf(nextChoice) >= 0) {
+                        continueStory(nextChoice, replays)
+                    }
+                }
+            }
+        );
+    }
+
+    //displays results from the current message set, and returns the set of valid choices for the present halt (for possibly choice replaying).
+    function processStoryMessages(messages) {
+        var currentChoices = [];
+        for (var i = 0; i < messages.length; i++) {
+            if (messages[i].messageType == 'text') {
+                $storyMainDiv.append($('<p class="new-text"></p>').html(messages[i].outputText));
+            } else if (messages[i].messageType == 'choice') {
+                currentChoices.push(messages[i].choiceIndex);
+                $storyChoicesDiv.append($('<p><a href="#" class="story-choice-link" data-cindex="' + messages[i].choiceIndex + '">' + messages[i].outputText + '</a></p>'));
+            } else if (messages[i].messageType == 'error') {
+                $storyMainDiv.append($('<p style="color: red"></p>').html(messages[i].outputText));
+            }
+        }
+
+        if (messages.length > 0) $storyMainDiv.append('<hr />');
+
+        $storyMainDiv.scrollTop($storyMainDiv.prop('scrollHeight') - $storyMainDiv.innerHeight());
+        $storyChoicesDiv.scrollTop($storyChoicesDiv.prop('scrollHeight') - $storyChoicesDiv.innerHeight());
+        
+        return currentChoices;
+    }
+</script>
+
+}
+
+
+<h2>@ViewBag.Title</h2>
+
+<div class="row">
+    <div id="ink-div" class="col-md-6">
+        <textarea id="inktext" name="inktext"></textarea>
+    </div>
+    
+    <div id="story-main-div" class="col-md-3"></div>
+
+    <div id="story-choices-div" class="col-md-3"></div>
+</div>
 <br />
-<p>Choose a story:</p>
+<div class="row">
+    <div id="start-fresh-div" class="col-md-3 centered">
+        <input id="start-fresh-button" type="button" class="btn btn-default" value="Play Ink (Start Fresh)" />
+    </div>
+    <div id="replay-div" class="col-md-3 centered">
+        <input id="replay-button" type="button" class="btn btn-default" value="Play Ink (Replay to Now)" disabled="disabled" />
+    </div>
+    
+    <div id="story-main-status-div" class="col-md-3"></div>
 
-@foreach (int key in Model.Keys)
-{
-    <p><a href="@Url.Content("~/Ink/Story/")?storyId=@key">@Model[key]</a></p>
-}
-
-
+    <div id="story-choices-status-div" class="col-md-3"></div>
+    
+</div>
