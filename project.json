@@ -1,7 +1,6 @@
 {
   "_comment1": "adding a ref to a dll: this dude says only nuget packages are supported, wtf? http://forums.asp.net/t/2081016.aspx?How+do+I+reference+a+NON+NUGET+library+in+VS+Code+for+an+ASP+NET+vNext+project+",
   "_comment2": "no, you don't have to nuget. but it is a goddamn pain. here's what worked (dnu wrap): http://stackoverflow.com/questions/29970854/how-do-you-add-references-to-locally-created-non-asp-net-5-dlls-to-an-asp-net-5",
-  
   "version": "1.0.0-*",
   "compilationOptions": {
     "emitEntryPoint": true
@@ -9,7 +8,6 @@
   "tooling": {
     "defaultNamespace": "Quill"
   },
-
   "dependencies": {
     "Microsoft.AspNet.Diagnostics": "1.0.0-rc1-final",
     "Microsoft.AspNet.IISPlatformHandler": "1.0.0-rc1-final",
@@ -18,24 +16,24 @@
     "Microsoft.AspNet.Server.Kestrel": "1.0.0-rc1-final",
     "Microsoft.AspNet.StaticFiles": "1.0.0-rc1-final",
     "Microsoft.AspNet.Tooling.Razor": "1.0.0-rc1-final",
-    "Microsoft.Extensions.Configuration.FileProviderExtensions" : "1.0.0-rc1-final",
+    "Microsoft.Extensions.Configuration.FileProviderExtensions": "1.0.0-rc1-final",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-rc1-final",
     "Microsoft.Extensions.Logging": "1.0.0-rc1-final",
     "Microsoft.Extensions.Logging.Console": "1.0.0-rc1-final",
     "Microsoft.Extensions.Logging.Debug": "1.0.0-rc1-final",
     "Newtonsoft.Json": "8.0.3",
+    "System.Diagnostics.Process": "4.1.0-beta-23516",
     "ink-engine-runtime": ""
   },
-
   "commands": {
     "web": "Microsoft.AspNet.Server.Kestrel"
   },
-
   "frameworks": {
     "dnxcore50": {
+      "dependencies": {
+      }
     }
   },
-
   "exclude": [
     "wwwroot",
     "node_modules",

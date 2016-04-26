@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc;
+using System.Diagnostics;
 
 namespace Quill.Controllers
 {
@@ -20,6 +21,25 @@ namespace Quill.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+        
+        public IActionResult Test()
+        {
+            var processStartInfo = new ProcessStartInfo()
+            {
+                Arguments = _rootPath + "/lib/inklecate.exe" + " -o " + _rootPath + "/AppData/InkJsons/output.json " + _rootPath + "/AppData/RawInks/test.ink",
+                FileName = "dnx.exe",
+                // FileName = _rootPath + "/lib/inklecate.exe -o " + _rootPath + "/InkJsons/output.json " + _rootPath + "/AppData/RawInks/test.ink",
+                RedirectStandardOutput = true,
+                UseShellExecute = false
+            };
+            
+            Process p = new Process();
+            p.StartInfo = processStartInfo;
+            p.Start();
+            p.WaitForExit();
+            
+            return Content("no errors");
         }
         
         public IActionResult OrigIndex()
