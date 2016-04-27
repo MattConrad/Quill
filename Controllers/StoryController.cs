@@ -18,16 +18,16 @@ namespace Quill.Controllers
             _rootPath = appEnv.ApplicationBasePath;
         }
         
-        public IActionResult Story(int storyId) 
-        {
-            string storyTitle = (HomeController.StoryDictionary != null && HomeController.StoryDictionary.ContainsKey(storyId)) ? HomeController.StoryDictionary[storyId] : "(story title unavailable)";
+        // public IActionResult Story(int storyId) 
+        // {
+        //     string storyTitle = (HomeController.StoryDictionary != null && HomeController.StoryDictionary.ContainsKey(storyId)) ? HomeController.StoryDictionary[storyId] : "(story title unavailable)";
 
-            var startup = new StoryStartupTuple() { StoryId = storyId, StoryTitle = storyTitle, StoryStateGuid = Guid.NewGuid() };
+        //     var startup = new StoryStartupTuple() { StoryId = storyId, StoryTitle = storyTitle, StoryStateGuid = Guid.NewGuid() };
 
-            //would like to create and save story now, this would make ContinueStory() simpler, but trying to save/restore story before any actions are taken crashes.
+        //     //would like to create and save story now, this would make ContinueStory() simpler, but trying to save/restore story before any actions are taken crashes.
 
-            return View(startup);
-        }
+        //     return View(startup);
+        // }
         
         [Produces("application/json")]
         public IActionResult ContinueStory(int storyId, Guid storyStateGuid, int? choiceIndex, string path) 
@@ -71,7 +71,7 @@ namespace Quill.Controllers
 
         private Story LoadEmptyStory(int storyId)
         {
-            string storyJson = System.IO.File.ReadAllText(_rootPath + HomeController.InkJsonsDirectory + "story_" + storyId + ".json");
+            string storyJson = System.IO.File.ReadAllText(_rootPath + HomeController._inkJsonsDirectory + "story_" + storyId + ".json");
 
             return new Story(storyJson);
         }

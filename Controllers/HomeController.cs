@@ -1,17 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNet.Mvc;
 using System.Diagnostics;
+using Quill.Models;
 
 namespace Quill.Controllers
 {
     public class HomeController : Controller
     {
-        public static readonly string InkJsonsDirectory = "/AppData/InkJsons/";
-        public static Dictionary<int, string> StoryDictionary = null;
+        public static readonly string _inkJsonsDirectory = "/AppData/InkJsons/";
+        public static readonly string _rawInksDirectory = "/AppData/RawInks/";
+        private static readonly string _gameStatesDirectory = "/AppData/GameStates/";
 
         private string _rootPath;
+        
+        public static Dictionary<int, string> StoryDictionary;  //MWCTODO: this goes away.
         
         public HomeController(Microsoft.Extensions.PlatformAbstractions.IApplicationEnvironment appEnv)
         {
@@ -20,16 +23,43 @@ namespace Quill.Controllers
         
         public IActionResult Index()
         {
+            ViewBag.SessionGuid = Guid.NewGuid();
             return View();
         }
         
-        public IActionResult Test()
+        public IActionResult ContinueStory(Guid sessionGuid, int? choiceIndex) 
         {
+            string inkJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
+            string gameStatePath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
+            
+            //if no choices at all, this means we're starting a new story.
+            if (!choiceIndex.HasValue) return StartNewStory(inkJsonPath, gameStatePath);
+
+            //there was a choiceIndex selected, which means we're continuing a saved story.
+            var story = InkMethods.RestoreStory(inkJsonPath, gameStatePath);
+
+            //much happens in the Ink runtime here.
+            story.ChooseChoiceIndex(choiceIndex.Value);
+
+            List<InkOutputMessage> outputs = InkMethods.GetStoryOutputMessages(story);
+
+            InkMethods.SaveStory(gameStatePath, story);
+
+            return Json(outputs);
+        }
+        
+        public IActionResult PlayInk(string inktext, Guid sessionGuid)
+        {
+            string newInkPath = _rootPath + _rawInksDirectory + sessionGuid + ".ink";
+            string newJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
+            
+            System.IO.File.WriteAllText(newInkPath, inktext);
+            
+            //MWCTODO: my inklecate isn't writing version number, and the resulting .jsons don't run right. I BET this is bc of the assembly refs that we commented out.
             var processStartInfo = new ProcessStartInfo()
             {
-                Arguments = _rootPath + "/lib/inklecate.exe" + " -o " + _rootPath + "/AppData/InkJsons/output.json " + _rootPath + "/AppData/RawInks/test.ink",
-                FileName = "dnx.exe",
-                // FileName = _rootPath + "/lib/inklecate.exe -o " + _rootPath + "/InkJsons/output.json " + _rootPath + "/AppData/RawInks/test.ink",
+                Arguments = _rootPath + "/lib/inklecate.exe" + " -o " + newJsonPath + " " + newInkPath,
+                FileName = "dnx",
                 RedirectStandardOutput = true,
                 UseShellExecute = false
             };
@@ -38,25 +68,19 @@ namespace Quill.Controllers
             p.StartInfo = processStartInfo;
             p.Start();
             p.WaitForExit();
-            
-            return Content("no errors");
+
+            return Json(new { status = "success" });
         }
         
-        public IActionResult OrigIndex()
+        private IActionResult StartNewStory(string inkJsonPath, string gameStatePath)
         {
-            if (StoryDictionary == null) InitStoryDict();
+            var story = Models.InkMethods.LoadEmptyStory(inkJsonPath);
 
-            if (StoryDictionary.Count == 0) throw new InvalidOperationException("MWCTODO: invite them to init the application");
+            List<InkOutputMessage> outputs = InkMethods.GetStoryOutputMessages(story);
 
-            return View(StoryDictionary);
-        }
-        
-        private void InitStoryDict()
-        {
-            StoryDictionary = System.IO.File.ReadAllText(_rootPath + InkJsonsDirectory + "index.txt")
-                .Split(new string[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(s => s.Split('~'))
-                .ToDictionary(k => int.Parse(k[0]), v => v[1]);
+            InkMethods.SaveStory(gameStatePath, story);
+
+            return Json(outputs);
         }
         
         

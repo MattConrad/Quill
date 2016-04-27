@@ -1,23 +1,10 @@
-@model object
-@* //@model Quill.Models.StoryStartupTuple *@
-
-@{
-    //MWCTODO: restore this.
-    //ViewBag.Title = Model.StoryTitle;
-    
-}
-
 @* MWCTODO: we want to move this off to a .js file in due course *@
-
 @section scripts {
 
 <script type="text/javascript">
     var playInkUrl = '@Url.Content("~/Home/PlayInk")';
-    var continueStoryUrl = '@Url.Content("~/Ink/ContinueStory")';
-    var storyId = null;
-    @* var storyId = @Model.StoryId; *@
-    var storyStateGuid = null;
-    @* var storyStateGuid = '@Model.StoryStateGuid.ToString()'; *@
+    var continueStoryUrl = '@Url.Content("~/Home/ContinueStory")';
+    var sessionGuid = '@(((Guid)ViewBag.SessionGuid).ToString())';
     var replayChoices = [];
 
     var $storyMainDiv;
@@ -51,16 +38,18 @@
     
     function playInk() {
         //MWCTODO: validate that the textarea isn't just whitespace. can probably silently ignore button click if it is.
+        
+        //MWCTODO: if we pass validation, clear out the story playing divs, there might be old just leftover there.
         $.post(
             playInkUrl,
-            { "inktext": $("#inktext").val() },
+            { "inktext": $("#inktext").val(), "sessionGuid": sessionGuid },
             function(results) {
                 if (results.errors) {
-                    //MWCTODO: maybe we should actually tell the users there were errors.
+                    //MWCTODO: maybe we should actually tell the users there were errors.  first, let's send back the errors, though.
                     console.log(results.errors);
                 } else {
-                    storyId = results.storyId;
-                    storyStateGuid = results.storyStateGuid;
+                    // storyId = results.storyId;
+                    // storyStateGuid = results.storyStateGuid;
 
                     var replays = replayChoices.slice();
                     continueStory(null, replays);
@@ -74,8 +63,7 @@
 
         $.getJSON(
             continueStoryUrl,
-            //the server accepts "path", but we don't support it here, now.
-            { "storyId": storyId, "storyStateGuid": storyStateGuid, "choiceIndex": choiceIndex, "path": null },
+            { "sessionGuid": sessionGuid, "choiceIndex": choiceIndex },
             function (messages) {
                 var currentChoices = processStoryMessages(messages);
                 if (replays && replays.length > 0 && currentChoices.length > 0) {
@@ -119,7 +107,7 @@
 <form>
     <div class="row">
         <div class="col-md-12">
-            <p>Quill is a tool for online reading and tinkering with Ink (link) stories.</p>        
+            <p>Quill is a tool for playing and tinkering with Ink (link) stories.</p>        
         </div>
     </div>
 
@@ -136,7 +124,6 @@
             </select>
         </div>
     </div>
-    
     
     <div class="row" style="padding-top: 20px;" >
         <div id="ink-div" class="col-md-6">
