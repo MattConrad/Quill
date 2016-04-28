@@ -14,8 +14,6 @@ namespace Quill.Controllers
 
         private string _rootPath;
         
-        public static Dictionary<int, string> StoryDictionary;  //MWCTODO: this goes away.
-        
         public HomeController(Microsoft.Extensions.PlatformAbstractions.IApplicationEnvironment appEnv)
         {
             _rootPath = appEnv.ApplicationBasePath;
@@ -50,25 +48,36 @@ namespace Quill.Controllers
         
         public IActionResult PlayInk(string inktext, Guid sessionGuid)
         {
-            string newInkPath = _rootPath + _rawInksDirectory + sessionGuid + ".ink";
-            string newJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
-            
-            System.IO.File.WriteAllText(newInkPath, inktext);
-            
-            var processStartInfo = new ProcessStartInfo()
+            try 
             {
-                Arguments = _rootPath + "/lib/inklecate.exe" + " -o " + newJsonPath + " " + newInkPath,
-                FileName = "dnx",
-                RedirectStandardOutput = true,
-                UseShellExecute = false
-            };
-            
-            Process p = new Process();
-            p.StartInfo = processStartInfo;
-            p.Start();
-            p.WaitForExit();
-
-            return Json(new { status = "success" });
+                string newInkPath = _rootPath + _rawInksDirectory + sessionGuid + ".ink";
+                string newJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
+                
+                System.IO.File.WriteAllText(newInkPath, inktext);
+                
+                var processStartInfo = new ProcessStartInfo()
+                {
+                    Arguments = _rootPath + "/lib/inklecate.exe" + " -o " + newJsonPath + " " + newInkPath,
+                    FileName = "dnx",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false
+                };
+                
+                Process p = new Process();
+                p.StartInfo = processStartInfo;
+                p.Start();
+                p.WaitForExit(3000);
+                
+                if (p.ExitCode != 0) {
+                    throw new InvalidOperationException("Ink processing crashed. No details are available, but invalid .ink syntax is likely.");
+                }
+                    
+                return Json(new { error = "" });
+            }
+            catch (Exception x)
+            {
+                return Json(new { error = "Failure processing .ink. Invalid .ink syntax is likely: " + x.Message });
+            }
         }
         
         private IActionResult StartNewStory(string inkJsonPath, string gameStatePath)

@@ -33,7 +33,7 @@
 
         <div id="story-choices-div" class="col-md-3"></div>
     </div>
-    <br />
+    <br>
     <div class="row">
         <div id="start-fresh-div" class="col-md-3 centered">
             <input id="start-fresh-button" type="button" class="btn btn-default" value="Play Ink (Start Fresh)" />
@@ -45,13 +45,17 @@
         <div id="story-main-status-div" class="col-md-3"></div>
 
         <div id="story-choices-status-div" class="col-md-3"></div>
-        
+    </div>
+    <br>
+    <div class="row">
+        <div id="ink-status-div" class="col-md-6"></div>
     </div>
 </form>
 
 @section scripts {
 
 <script type="text/javascript">
+    var customStorageKey = 'customink';
     var playInkUrl = '@Url.Content("~/Home/PlayInk")';
     var continueStoryUrl = '@Url.Content("~/Home/ContinueStory")';
     var sessionGuid = '@(((Guid)ViewBag.SessionGuid).ToString())';
@@ -61,46 +65,76 @@
     var $storyChoicesDiv;
     var $storyMainStatusDiv;
     var $storyChoicesStatusDiv;
+    var $inkStatusDiv;
+    
+    //MWCTODO: replay doesn't work yet, replay button needs to disable/enable appropriately.
 
     $(document).ready(function () {
         $storyMainDiv = $("#story-main-div");
         $storyChoicesDiv = $("#story-choices-div");
-        $storyMainStatusDiv = $("#story-main-div");
-        $storyChoicesStatusDiv = $("#story-choices-div");
+        $storyMainStatusDiv = $("#story-main-status-div");
+        $storyChoicesStatusDiv = $("#story-choices-status-div");
+        $inkStatusDiv = $("#ink-status-div");
 
         $storyChoicesDiv.on('click', '.story-choice-link', function () {
             $storyChoicesDiv.empty();
-            continueStory($(this).data('cindex'));
+            continueStory($(this).data('cindex'), null);
             return false;
         })
         
         $("#story-example-select").change(function() {
-            var exampleIndex =  parseInt($("#story-example-select").val());
-            console.log(exampleIndex);
-            $("#inktext").val(examples[exampleIndex]); 
+            emptyAll();
+            var exampleIndex = parseInt($("#story-example-select").val());
+            
+            if (exampleIndex == 0) {
+                $("#inktext").val(loadLocal());
+            } else {
+                $("#inktext").val(examples[exampleIndex]); 
+            }
         });
         
         $("#start-fresh-button").click(function() { replayChoices = []; playInk(); });
         $("#replay-button").click(playInk);
-
-        //continueStory();
     });
     
+    function emptyAll() {
+        $storyMainDiv.empty();
+        $storyChoicesDiv.empty();
+        $storyMainStatusDiv.empty();
+        $storyChoicesStatusDiv.empty();
+        $inkStatusDiv.empty();
+    }
+    
+    //we're going to assume a browser that supports localStorage.
+    function loadLocal() {
+        return localStorage.getItem(customStorageKey) || "";
+    }
+    
+    function saveLocal(inktext) {
+        localStorage.setItem(customStorageKey, inktext);
+    }
+    
     function playInk() {
-        //MWCTODO: validate that the textarea isn't just whitespace. can probably silently ignore button click if it is.
+        emptyAll();
         
-        //MWCTODO: if we pass validation, clear out the story playing divs, there might be old just leftover there.
+        var inktext = $("#inktext").val();
+        
+        if (/^\s*$/.test(inktext)) {
+            $inkStatusDiv.append($('<p class="alert alert-danger"></p>').html("Enter text before playing."));
+            return;
+        }
+        
+        if ($("#story-example-select").val() == '0') {
+            saveLocal(inktext);
+        }
+        
         $.post(
             playInkUrl,
-            { "inktext": $("#inktext").val(), "sessionGuid": sessionGuid },
+            { "inktext": inktext, "sessionGuid": sessionGuid },
             function(results) {
-                if (results.errors) {
-                    //MWCTODO: maybe we should actually tell the users there were errors.  first, let's send back the errors, though.
-                    console.log(results.errors);
+                if (results.error) {
+                    $inkStatusDiv.append($('<p class="alert alert-danger"></p>').html(results.error));
                 } else {
-                    // storyId = results.storyId;
-                    // storyStateGuid = results.storyStateGuid;
-
                     var replays = replayChoices.slice();
                     continueStory(null, replays);
                 }
@@ -110,17 +144,27 @@
 
     function continueStory(choiceIndex, replays) {
         $("#story-main-div p.new-text").removeClass("new-text");
+        
+        //if we're not in the middle of replaying, and there is an active choice, append it to the replayChoices array.
+        if (!replays && choiceIndex) {
+            replayChoices.push(choiceIndex);
+        }
 
         $.getJSON(
             continueStoryUrl,
             { "sessionGuid": sessionGuid, "choiceIndex": choiceIndex },
             function (messages) {
                 var currentChoices = processStoryMessages(messages);
+                
                 if (replays && replays.length > 0 && currentChoices.length > 0) {
                     var nextChoice = replays.shift();
-                    //they might have changed the story and invalidated a formerly valid choice. we probably ought to truncate replayChoices to the last valid choice...
+                    //it's possible that replay choices have been messed up by .ink revisions. check and handle if so.
                     if (currentChoices.indexOf(nextChoice) >= 0) {
                         continueStory(nextChoice, replays)
+                    } else {
+                        //MWCTODO: don't forget to toggle the button also.
+                        replayChoices = [];
+                        $storyChoicesStatusDiv.append($('<p class="alert alert-danger"></p>').html('Replay choices are no longer valid due to story changes. Replay halted.'));
                     }
                 }
             }
@@ -137,11 +181,13 @@
                 currentChoices.push(messages[i].choiceIndex);
                 $storyChoicesDiv.append($('<p><a href="#" class="story-choice-link" data-cindex="' + messages[i].choiceIndex + '">' + messages[i].outputText + '</a></p>'));
             } else if (messages[i].messageType == 'error') {
-                $storyMainDiv.append($('<p style="color: red"></p>').html(messages[i].outputText));
+                $storyMainDiv.append($('<p class="alert alert-danger"></p>').html(messages[i].outputText));
             }
         }
 
-        if (messages.length > 0) $storyMainDiv.append('<hr />');
+        if (messages.length > 0 && currentChoices.length > 0) $storyMainDiv.append('<hr />');
+        
+        if (currentChoices.length == 0) $storyChoicesDiv.append($('<p></p>').html('(story complete)'));
 
         $storyMainDiv.scrollTop($storyMainDiv.prop('scrollHeight') - $storyMainDiv.innerHeight());
         $storyChoicesDiv.scrollTop($storyChoicesDiv.prop('scrollHeight') - $storyChoicesDiv.innerHeight());
@@ -150,7 +196,6 @@
     }
 
     var examples = [];
-    //MWCTODO: author your own probably ought to read from localStorage, not just overwrite with "".
     examples[0] = "";
     examples[1] = "- I looked at Monsieur Fogg \n*   ... and I could contain myself no longer.\n    'What is the purpose of our journey, Monsieur?'\n    'A wager,' he replied.\n    * *     'A wager!'[] I returned.\n            He nodded. \n            * * *   'But surely that is foolishness!'\n            * * *  'A most serious matter then!'\n            - - -   He nodded again.\n            * * *   'But can we win?'\n                    'That is what we will endeavour to find out,' he answered.\n            * * *   'A modest wager, I trust?'\n                    'Twenty thousand pounds,' he replied, quite flatly.\n            * * *   I asked nothing further of him then[.], and after a final, polite cough, he offered nothing more to me. <>\n    * *     'Ah[.'],' I replied, uncertain what I thought.\n    - -     After that, <>\n*   ... but I said nothing[] and <> \n- we passed the day in silence.\n- -> END";
     examples[2] = "=== whack_a_mole ===\n    {I heft the hammer.|{~Missed!|Nothing!|No good. Where is he?|Ah-ha! Got him! -> END}}\n    The {&mole|{&nasty|blasted|foul} {&creature|rodent}} is {in here somewhere|hiding somewhere|still at large|laughing at me|still unwhacked|doomed}. <>\n    {!I'll show him!|But this time he won't escape!}\n    *   [{&Hit|Smash|Try} top-left]     -> whack_a_mole\n    *  [{&Whallop|Splat|Whack} top-right] -> whack_a_mole\n    *  [{&Blast|Hammer} middle] -> whack_a_mole\n    *  [{&Clobber|Bosh} bottom-left]    -> whack_a_mole\n    *  [{&Nail|Thump} bottom-right]     -> whack_a_mole\n    *  [] Then you collapse from hunger. The mole has defeated you! \n        -> END";
