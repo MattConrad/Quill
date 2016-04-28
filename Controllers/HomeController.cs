@@ -30,7 +30,7 @@ namespace Quill.Controllers
         public IActionResult ContinueStory(Guid sessionGuid, int? choiceIndex) 
         {
             string inkJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
-            string gameStatePath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
+            string gameStatePath = _rootPath + _gameStatesDirectory + sessionGuid + ".json";
             
             //if no choices at all, this means we're starting a new story.
             if (!choiceIndex.HasValue) return StartNewStory(inkJsonPath, gameStatePath);
