@@ -55,7 +55,6 @@ namespace Quill.Controllers
             
             System.IO.File.WriteAllText(newInkPath, inktext);
             
-            //MWCTODO: my inklecate isn't writing version number, and the resulting .jsons don't run right. I BET this is bc of the assembly refs that we commented out.
             var processStartInfo = new ProcessStartInfo()
             {
                 Arguments = _rootPath + "/lib/inklecate.exe" + " -o " + newJsonPath + " " + newInkPath,

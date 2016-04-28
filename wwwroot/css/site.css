@@ -1,6 +1,6 @@
 body {
-    padding-top: 50px;
-    padding-bottom: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 /* Wrapping element */
@@ -33,6 +33,8 @@ textarea {
 #inktext {
     height: 100%;
     width: 100%;
+    white-space: pre;
+    word-wrap: normal;
     font-family: "Courier New", Courier, monospace;
 }
 
