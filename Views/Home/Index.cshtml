@@ -5,6 +5,8 @@
         <div class="col-md-12">
             <p>This page runs Quill, a tool for playing and tinkering with <a href="https://github.com/inkle/ink">Ink</a> stories. (Ink is a mini-language for writing choose-your own adventure games.)</p>
             <p>You can test out (and modify) the example snippets below, or play the short-but-complete Ink story The Intercept. If you're experimenting, <a href="https://github.com/inkle/ink/blob/master/Documentation/WritingWithInk.md">the Ink tutorial</a> may come in handy.</p>
+            <p>Enter valid Ink text on the left (or select an example), and click Play Ink to play the results. The resulting story and story choices will appear on the right.</p>
+            <p>If you are playing a story and making revisions as you go along, you can use Play Ink (Replay Choices) to replay your previous path on the latest revision.</p>
         </div>
     </div>
 
@@ -17,7 +19,7 @@
         <div class="col-md-3">
             <select id="story-example-select" class="form-control">
                 <option value="0">(write your own Ink)</option>
-                <option value="1">A wager</option>
+                <option value="1">The Wager</option>
                 <option value="2">Whack A Mole</option>
                 <option value="3">The Intercept (very long)</option>
             </select>
@@ -29,9 +31,9 @@
             <textarea id="inktext" name="inktext"></textarea>
         </div>
         
-        <div id="story-main-div" class="col-md-3"></div>
+        <div id="story-main-div" class="col-md-4"></div>
 
-        <div id="story-choices-div" class="col-md-3"></div>
+        <div id="story-choices-div" class="col-md-2"></div>
     </div>
     <br>
     <div class="row">
@@ -39,12 +41,10 @@
             <input id="start-fresh-button" type="button" class="btn btn-default" value="Play Ink (Start Fresh)" />
         </div>
         <div id="replay-div" class="col-md-3 centered">
-            <input id="replay-button" type="button" class="btn btn-default" value="Play Ink (Replay to Now)" disabled="disabled" />
+            <input id="replay-button" type="button" class="btn btn-default" value="Play Ink (Replay Choices)" disabled="disabled" />
         </div>
         
-        <div id="story-main-status-div" class="col-md-3"></div>
-
-        <div id="story-choices-status-div" class="col-md-3"></div>
+        <div id="story-status-div" class="col-md-6"></div>
     </div>
     <br>
     <div class="row">
@@ -63,17 +63,13 @@
 
     var $storyMainDiv;
     var $storyChoicesDiv;
-    var $storyMainStatusDiv;
-    var $storyChoicesStatusDiv;
+    var $storyStatusDiv;
     var $inkStatusDiv;
     
-    //MWCTODO: replay doesn't work yet, replay button needs to disable/enable appropriately.
-
     $(document).ready(function () {
         $storyMainDiv = $("#story-main-div");
         $storyChoicesDiv = $("#story-choices-div");
-        $storyMainStatusDiv = $("#story-main-status-div");
-        $storyChoicesStatusDiv = $("#story-choices-status-div");
+        $storyStatusDiv = $("#story-status-div");
         $inkStatusDiv = $("#ink-status-div");
 
         $storyChoicesDiv.on('click', '.story-choice-link', function () {
@@ -83,6 +79,7 @@
         })
         
         $("#story-example-select").change(function() {
+            clearReplayChoices();
             emptyAll();
             var exampleIndex = parseInt($("#story-example-select").val());
             
@@ -93,15 +90,16 @@
             }
         });
         
-        $("#start-fresh-button").click(function() { replayChoices = []; playInk(); });
+        $("#start-fresh-button").click(function() { clearReplayChoices(); playInk(); });
         $("#replay-button").click(playInk);
+        
+        $("#inktext").val(loadLocal());
     });
     
     function emptyAll() {
         $storyMainDiv.empty();
         $storyChoicesDiv.empty();
-        $storyMainStatusDiv.empty();
-        $storyChoicesStatusDiv.empty();
+        $storyStatusDiv.empty();
         $inkStatusDiv.empty();
     }
     
@@ -114,6 +112,16 @@
         localStorage.setItem(customStorageKey, inktext);
     }
     
+    function addReplayChoice(choiceIndex) {
+        replayChoices.push(choiceIndex);
+        $("#replay-button").removeAttr('disabled');
+    }
+    
+    function clearReplayChoices() {
+        replayChoices = [];
+        $("#replay-button").attr('disabled', 'disabled');
+    }
+   
     function playInk() {
         emptyAll();
         
@@ -146,8 +154,8 @@
         $("#story-main-div p.new-text").removeClass("new-text");
         
         //if we're not in the middle of replaying, and there is an active choice, append it to the replayChoices array.
-        if (!replays && choiceIndex) {
-            replayChoices.push(choiceIndex);
+        if (!replays && (choiceIndex || choiceIndex == 0)) {
+            addReplayChoice(choiceIndex);
         }
 
         $.getJSON(
@@ -160,11 +168,11 @@
                     var nextChoice = replays.shift();
                     //it's possible that replay choices have been messed up by .ink revisions. check and handle if so.
                     if (currentChoices.indexOf(nextChoice) >= 0) {
+                        $storyChoicesDiv.empty();
                         continueStory(nextChoice, replays)
                     } else {
-                        //MWCTODO: don't forget to toggle the button also.
-                        replayChoices = [];
-                        $storyChoicesStatusDiv.append($('<p class="alert alert-danger"></p>').html('Replay choices are no longer valid due to story changes. Replay halted.'));
+                        clearReplayChoices();
+                        $storyStatusDiv.append($('<p class="alert alert-danger"></p>').html('Replay choices are no longer valid due to story changes. Replay halted.'));
                     }
                 }
             }
@@ -187,7 +195,7 @@
 
         if (messages.length > 0 && currentChoices.length > 0) $storyMainDiv.append('<hr />');
         
-        if (currentChoices.length == 0) $storyChoicesDiv.append($('<p></p>').html('(story complete)'));
+        if (currentChoices.length == 0) $storyChoicesDiv.append($('<p></p>').html('<em>(story complete)</em>'));
 
         $storyMainDiv.scrollTop($storyMainDiv.prop('scrollHeight') - $storyMainDiv.innerHeight());
         $storyChoicesDiv.scrollTop($storyChoicesDiv.prop('scrollHeight') - $storyChoicesDiv.innerHeight());

@@ -76,7 +76,7 @@ namespace Quill.Controllers
             }
             catch (Exception x)
             {
-                return Json(new { error = "Failure processing .ink. Invalid .ink syntax is likely: " + x.Message });
+                return Json(new { error = "Processing failed. Likely cause is invalid syntax. (error text: " + x.Message + ")" });
             }
         }
         
