@@ -69,7 +69,7 @@ namespace Quill.Controllers
                 p.WaitForExit(3000);
                 
                 if (p.ExitCode != 0) {
-                    throw new InvalidOperationException("Ink processing crashed. No details are available, but invalid .ink syntax is likely.");
+                    throw new InvalidOperationException("Ink processing crashed. No details are available.");
                 }
                     
                 return Json(new { error = "" });
