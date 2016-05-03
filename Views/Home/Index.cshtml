@@ -1,4 +1,6 @@
-<h2>@ViewBag.Title</h2>
+@{
+    string webAppPath = (string)ViewBag.WebAppPath;
+}
 
 <form>
     <div class="row">
@@ -55,8 +57,8 @@
 
 <script type="text/javascript">
     var customStorageKey = 'customink';
-    var playInkUrl = '@Url.Content("~/Home/PlayInk")';
-    var continueStoryUrl = '@Url.Content("~/Home/ContinueStory")';
+    var playInkUrl = '@webAppPath' + 'Home/PlayInk';
+    var continueStoryUrl = '@webAppPath' + 'Home/ContinueStory';
     var sessionGuid = '@(((Guid)ViewBag.SessionGuid).ToString())';
     var replayChoices = [];
 

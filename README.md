@@ -16,4 +16,6 @@ The .dll and .exe in /lib are compiled against .NET Core (not Mono and not "regu
 
 (Building the Ink runtime and Inklecate against .NET Core are a little tricky. This is a good RC1 resource for setting up a project.json and working through the issues, but be prepared to apply some workaround hacks as well. http://blog.marcgravell.com/2015/11/the-road-to-dnx-part-1.html. Again, when RC2 arrives, at least some things here will change.)
 
+You'll need to revise the WebAppRoot setting in appsettings.json. "/" is a plausible value. This is a substitute for the '~' root operator that you get in ASP.NET on IIS, but don't get with nginx/Kestrel. There's probably a better way to handle this, drop me a note if you know what it is.
+
 You will need to fix the path in /wrap/ink-engine-runtime/project.json to a local path. At least according to Stack Overflow, the wrap feature only works with an absolute path. Hey, we're on the edge here.

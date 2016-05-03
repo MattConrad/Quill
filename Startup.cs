@@ -1,7 +1,3 @@
-// using System;
-// using System.Collections.Generic;
-// using System.Linq;
-// using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -28,6 +24,8 @@ namespace Quill
         {
             // Add framework services.
             services.AddMvc();
+            //MWCTODO: would be nice if we could split between dev/prod for the WebAppRoot setting, look into this a little.
+            services.AddSingleton<IConfiguration>(sp => { return Configuration; } );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -42,6 +40,7 @@ namespace Quill
             }
             else
             {
+                //MWCTODO: guess I'd better restore that view that I deleted earlier...
                 app.UseExceptionHandler("/Home/Error");
             }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Mvc;
 using System.Diagnostics;
 using Quill.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace Quill.Controllers
 {
@@ -12,16 +13,21 @@ namespace Quill.Controllers
         public static readonly string _rawInksDirectory = "/AppData/RawInks/";
         private static readonly string _gameStatesDirectory = "/AppData/GameStates/";
 
+        //_rootPath is a filesystem path, for writing .ink/.jsons. _webAppPath is a URL modifier that is used instead of ~ (tilde, ofc, doesn't work with nginx) 
         private string _rootPath;
+        private string _webAppPath;
         
-        public HomeController(Microsoft.Extensions.PlatformAbstractions.IApplicationEnvironment appEnv)
+        public HomeController(Microsoft.Extensions.PlatformAbstractions.IApplicationEnvironment appEnv, IConfiguration config)
         {
             _rootPath = appEnv.ApplicationBasePath;
+            _webAppPath = config["WebAppPath"];
+            
         }
         
         public IActionResult Index()
         {
             ViewBag.SessionGuid = Guid.NewGuid();
+            ViewBag.WebAppPath = _webAppPath;
             return View();
         }
         
