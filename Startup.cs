@@ -40,7 +40,6 @@ namespace Quill
             }
             else
             {
-                //MWCTODO: guess I'd better restore that view that I deleted earlier...
                 app.UseExceptionHandler("/Home/Error");
             }
 

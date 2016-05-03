@@ -18,8 +18,6 @@ namespace Quill.Controllers
         private string _rootPath;
         private string _webAppPath;
 
-        //MWCTODO: also you need to get that cron job figured out...
-        
         public HomeController(Microsoft.Extensions.PlatformAbstractions.IApplicationEnvironment appEnv, IConfiguration config)
         {
             _rootPath = appEnv.ApplicationBasePath;
