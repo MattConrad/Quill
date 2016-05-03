@@ -13,15 +13,17 @@ namespace Quill.Controllers
         public static readonly string _rawInksDirectory = "/AppData/RawInks/";
         private static readonly string _gameStatesDirectory = "/AppData/GameStates/";
 
-        //_rootPath is a filesystem path, for writing .ink/.jsons. _webAppPath is a URL modifier that is used instead of ~ (tilde, ofc, doesn't work with nginx) 
+        //_rootPath is a filesystem path, for writing .ink/.jsons. _webAppPath is a URL modifier that is used instead of ~ (tilde, ofc, doesn't work with nginx)
+        //  tilde handling is under discussion: https://github.com/aspnet/Announcements/issues/57  doesn't quite look like this is speaking to my issue, though.
         private string _rootPath;
         private string _webAppPath;
+
+        //MWCTODO: also you need to get that cron job figured out...
         
         public HomeController(Microsoft.Extensions.PlatformAbstractions.IApplicationEnvironment appEnv, IConfiguration config)
         {
             _rootPath = appEnv.ApplicationBasePath;
             _webAppPath = config["WebAppPath"];
-            
         }
         
         public IActionResult Index()

@@ -1,5 +1,5 @@
 @{
-    string webAppPath = (string)ViewBag.WebAppPath;
+    string webAppPath = ViewBag.WebAppPath == null ? "/" : (string)ViewBag.WebAppPath;
 }
 
 <form>
@@ -57,8 +57,8 @@
 
 <script type="text/javascript">
     var customStorageKey = 'customink';
-    var playInkUrl = '@webAppPath' + 'Home/PlayInk';
-    var continueStoryUrl = '@webAppPath' + 'Home/ContinueStory';
+    var playInkUrl = '@(webAppPath)Home/PlayInk';
+    var continueStoryUrl = '@(webAppPath)Home/ContinueStory';
     var sessionGuid = '@(((Guid)ViewBag.SessionGuid).ToString())';
     var replayChoices = [];
 
