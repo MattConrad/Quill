@@ -5,7 +5,7 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        @* <meta name="viewport" content="width=device-width, initial-scale=1.0" />  MWCTODO: restore this once you sort out responsiveness better  http://getbootstrap.com/getting-started/#disable-responsive *@
         <title>Quill</title>
 
         <environment names="Development">
@@ -20,7 +20,7 @@
         </environment>
     </head>
     <body>
-        <div class="container body-content">
+        <div class="container body-content" style="width: 1170px !important;"> @* MWCTODO: take this width override out once you sort out responsiveness *@
             @RenderBody()
         </div>
         <environment names="Development">
