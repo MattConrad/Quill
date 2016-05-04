@@ -38,8 +38,13 @@ textarea {
     font-family: "Courier New", Courier, monospace;
 }
 
-#story-main-div, #story-choices-div {
-    height: 600px;
+#story-main-div {
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+#story-choices-div {
+    height: 150px;
     overflow-y: auto;
 }
 
