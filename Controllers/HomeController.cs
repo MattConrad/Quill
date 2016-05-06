@@ -63,27 +63,40 @@ namespace Quill.Controllers
                 
                 var processStartInfo = new ProcessStartInfo()
                 {
-                    Arguments = _rootPath + "/lib/inklecate.exe" + " -o " + newJsonPath + " " + newInkPath,
+                    Arguments = _rootPath + "/lib/inklecate.dll" + " -o " + newJsonPath + " " + newInkPath,
                     FileName = "dnx",
                     RedirectStandardOutput = true,
+                    RedirectStandardError = true,
                     UseShellExecute = false
                 };
                 
                 Process p = new Process();
                 p.StartInfo = processStartInfo;
                 p.Start();
-                p.WaitForExit(3000);
                 
-                if (p.ExitCode != 0) {
-                    throw new InvalidOperationException("Ink processing crashed. No details are available.");
-                }
+                //let's hope any syntax errs are found w/in a second
+                System.Threading.Thread.Sleep(1000);
+                string errorMessage = p.StandardError.ReadToEnd();
+                string outputMessage = p.StandardOutput.ReadToEnd();
+                p.WaitForExit(2000);
+                
+                if (!string.IsNullOrEmpty(errorMessage)) throw new InvalidOperationException(FixInkMessages(newInkPath, errorMessage));
+                if (!string.IsNullOrEmpty(outputMessage)) throw new InvalidOperationException(FixInkMessages(newInkPath, outputMessage));
+                if (p.ExitCode != 0) throw new InvalidOperationException("Ink processing crashed. No details are available.");
                     
                 return Json(new { error = "" });
             }
             catch (Exception x)
             {
-                return Json(new { error = "Processing failed. Likely cause is invalid syntax. (error text: " + x.Message + ")" });
+                return Json(new { error = x.Message });
             }
+        }
+        
+        //default ink syntax error messages prepend path/file, which is verbose and also useless here.
+        private string FixInkMessages(string newInkPath, string message)
+        {
+            string expectedPrefix = "'" + newInkPath + "' ";
+            return message.Replace(expectedPrefix, "");
         }
         
         private IActionResult StartNewStory(string inkJsonPath, string gameStatePath)
