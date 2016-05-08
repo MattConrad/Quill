@@ -27,18 +27,19 @@
         </div>
     </div>
     
-    <div class="row" style="padding-top: 20px;" >
-        <div class="col-md-6 col-xs-12" style="padding-bottom: 20px;">
-            <div id="ink-div" style="padding-bottom: 20px;">
+    <div class="row" style="padding-top: 10px;" >
+        <div class="col-md-6 col-xs-12" style="padding-bottom: 10px;">
+            <div id="ink-div" style="padding-bottom: 10px;">
                 <textarea id="inktext" name="inktext"></textarea>
             </div>
-            <div id="start-fresh-div" class="col-md-6 centered">
+            <div id="start-fresh-div" class="col-md-6 centered" style="padding-bottom: 10px;">
+                <span id="waiting-span" class="glyphicon glyphicon-time" aria-hidden="true" style="display: none;">&nbsp;</span>
                 <input id="start-fresh-button" type="button" class="btn btn-default" value="Play Ink (Start Fresh)" />
             </div>
-            <div id="replay-div" class="col-md-6 centered">
+            <div id="replay-div" class="col-md-6 centered" style="padding-bottom: 10px;">
                 <input id="replay-button" type="button" class="btn btn-default" value="Play Ink (Replay Choices)" disabled="disabled" />
             </div>
-            <div id="ink-status-div" class="col-md-12"></div>
+            <div id="ink-status-div" class="col-md-12" style="padding-bottom: 10px;"></div>
         </div>
         
         <div class="col-md-6 col-xs-12">
@@ -132,6 +133,11 @@
         if ($("#story-example-select").val() == '0') {
             saveLocal(inktext);
         }
+
+        //it takes a moment for play to run, help the user see what's going on.
+        $("#waiting-span").fadeIn();
+        $("#start-fresh-button").attr('disabled', 'disabled');
+        $("#replay-button").attr('disabled', 'disabled');
         
         $.post(
             playInkUrl,
@@ -143,6 +149,10 @@
                     var replays = replayChoices.slice();
                     continueStory(null, replays);
                 }
+                
+                $("#start-fresh-button").removeAttr('disabled');
+                if (replayChoices.length > 0) $("#replay-button").removeAttr('disabled');
+                $("#waiting-span").hide();
             }
         )
     }

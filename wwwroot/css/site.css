@@ -3,6 +3,12 @@ body {
     padding-bottom: 10px;
 }
 
+/*default is 20px, let's try 10.*/
+hr {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
 .body-content {
