@@ -31,7 +31,7 @@
     <div class="row" style="padding-top: 10px;" >
         <div class="col-md-6 col-xs-12" style="padding-bottom: 10px;">
             <div id="ink-div" style="padding-bottom: 10px;">
-                <textarea id="inktext" name="inktext"></textarea>
+                <div id="inktext"></div>
             </div>
             <div id="start-fresh-div" class="col-md-6 centered" style="padding-bottom: 10px;">
                 <span id="waiting-span" class="glyphicon glyphicon-time" aria-hidden="true" style="display: none;">&nbsp;</span>
@@ -53,6 +53,7 @@
 
 @section scripts {
 
+<script src="@(webAppPath)lib/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
     var customStorageKey = 'customink';
     var playInkUrl = '@(webAppPath)Home/PlayInk';
@@ -64,6 +65,8 @@
     var $storyChoicesDiv;
     var $storyStatusDiv;
     var $inkStatusDiv;
+    
+    var editor;
     
     $(document).ready(function () {
         $storyMainDiv = $("#story-main-div");
@@ -83,16 +86,21 @@
             var exampleIndex = parseInt($("#story-example-select").val());
             
             if (exampleIndex == 0) {
-                $("#inktext").val(loadLocal());
+                editor.setValue(loadLocal(), -1);
             } else {
-                $("#inktext").val(examples[exampleIndex]); 
+                editor.setValue(examples[exampleIndex], -1);
             }
         });
         
         $("#start-fresh-button").click(function() { clearReplayChoices(); playInk(); });
         $("#replay-button").click(playInk);
         
-        $("#inktext").val(loadLocal());
+        editor = ace.edit("inktext");
+        editor.getSession().setMode("ace/mode/text");
+        editor.getSession().setUseSoftTabs(true);
+        
+        editor.setValue(loadLocal(), -1);
+        editor.focus();
     });
     
     function emptyAll() {
@@ -124,7 +132,7 @@
     function playInk() {
         emptyAll();
         
-        var inktext = $("#inktext").val();
+        var inktext = editor.getValue();
         
         if (/^\s*$/.test(inktext)) {
             $inkStatusDiv.append($('<p class="alert alert-danger"></p>').html("Enter text before playing."));

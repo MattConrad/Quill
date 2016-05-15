@@ -42,6 +42,7 @@ textarea {
     white-space: pre;
     word-wrap: normal;
     font-family: "Courier New", Courier, monospace;
+    border: solid 1px #DDD;
 }
 
 #story-main-div {
