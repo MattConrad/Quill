@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Mvc;
 using System.Diagnostics;
 using Quill.Models;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 
 namespace Quill.Controllers
@@ -84,11 +85,21 @@ namespace Quill.Controllers
                 if (!string.IsNullOrEmpty(outputMessage)) throw new InvalidOperationException(FixInkMessages(newInkPath, outputMessage));
                 if (p.ExitCode != 0) throw new InvalidOperationException("Ink processing crashed. No details are available.");
                     
-                return Json(new { error = "" });
+                return Json(new { errors = new string[]{} });
             }
             catch (Exception x)
             {
-                return Json(new { error = x.Message });
+                try 
+                {
+                    var errors = GetInklecateErrors(x.Message);            
+                    return Json(new { errors = errors });
+                }
+                //MWCTODO: this means GetInklecateErrors() threw a new exception, should also write to the internal log (how does that work here?) 
+                catch
+                {
+                    var error = new CateError() { Message = x.Message, LineNumber = 0 };
+                    return Json(new { errors = new List<CateError>() { error } });
+                }
             }
         }
         
@@ -97,6 +108,50 @@ namespace Quill.Controllers
         {
             string expectedPrefix = "'" + newInkPath + "' ";
             return message.Replace(expectedPrefix, "");
+        }
+        
+        private List<CateError> GetInklecateErrors(string errorMessage)
+        {
+            List<CateError> errs = new List<CateError>();
+            
+            string target = "ERROR: line";
+            int current = errorMessage.IndexOf(target);
+            //we expect an error set that starts with the target, if we get something weird, send the original message with no parsing.
+            if (current != 0)
+            {
+                errs.Add(new CateError() { Message = errorMessage, LineNumber = -1 });
+                return errs;
+            }
+            
+            //this regex isn't very fancy, but (so far) InkleCate err format is simple & predictable and it works.
+            //MWCTODO: maybe not, tilde error seems to have messed this up, test with actual Inklecate.
+            Regex reLineNum = new Regex(@"\d+");
+            int next = 0;
+            int bailout = 0;
+            while(bailout < 20)
+            {
+                next = errorMessage.IndexOf(target, current + 1);
+                if (next < 0) break;
+                
+                AddCateError(errorMessage, current, next - current, reLineNum, ref errs);                
+
+                current = next;
+                bailout++;
+            }
+            
+            AddCateError(errorMessage, current, errorMessage.Length - current, reLineNum, ref errs);
+            
+            return errs;
+        }
+        
+        private void AddCateError(string errorMessage, int start, int end, Regex re, ref List<CateError> errs)
+        {
+            int line = -1;
+            string msg = errorMessage.Substring(start, end);
+            string lineStr = re.Match(msg).Value;
+            if (!string.IsNullOrEmpty(lineStr)) line = int.Parse(lineStr);
+           
+           errs.Add(new CateError() { Message = msg, LineNumber = line }); 
         }
         
         private IActionResult StartNewStory(string inkJsonPath, string gameStatePath)

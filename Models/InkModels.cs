@@ -25,6 +25,14 @@ namespace Quill.Models
         public string[] Instructions { get; set; }
     }
     
+    public class CateError
+    {
+        [JsonProperty(PropertyName = "message")]
+        public string Message { get; set; }
+        [JsonProperty(PropertyName = "lineNumber")]
+        public int LineNumber { get; set; }
+    }
+    
     public static class InkMethods
     {
         public static List<InkOutputMessage> GetStoryOutputMessages(Story story)

@@ -152,8 +152,14 @@
             playInkUrl,
             { "inktext": inktext, "sessionGuid": sessionGuid },
             function(results) {
-                if (results.error) {
-                    $inkStatusDiv.append($('<p class="alert alert-danger"></p>').html(results.error));
+                if (results.errors) {
+                    var $errDiv = $('<div class="alert alert-danger">');
+                    for(i = 0, len = results.errors.length; i < len; i++) {
+                        //MWCTODO: do something interesting with err.lineNumber and Ace.
+                        //MWCTODO: put a bit more spacing on these divs, too (make a new class).
+                        $errDiv.append($('<div>').html(results.errors[i].message));
+                    }
+                    $inkStatusDiv.append($errDiv);
                 } else {
                     var replays = replayChoices.slice();
                     continueStory(null, replays);
