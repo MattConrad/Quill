@@ -45,6 +45,10 @@ textarea {
     border: solid 1px #DDD;
 }
 
+div.cate-error {
+   padding: 2px 0 2px 0; 
+}
+
 #story-main-div {
     max-height: 450px;
     overflow-y: auto;

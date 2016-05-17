@@ -94,7 +94,7 @@ namespace Quill.Controllers
                     var errors = GetInklecateErrors(x.Message);            
                     return Json(new { errors = errors });
                 }
-                //MWCTODO: this means GetInklecateErrors() threw a new exception, should also write to the internal log (how does that work here?) 
+                //MWCTODO: this means GetInklecateErrors() threw a new exception, should also write to the internal log (figure out the RC2 way of doing this)
                 catch
                 {
                     var error = new CateError() { Message = x.Message, LineNumber = 0 };
@@ -124,11 +124,10 @@ namespace Quill.Controllers
             }
             
             //this regex isn't very fancy, but (so far) InkleCate err format is simple & predictable and it works.
-            //MWCTODO: maybe not, tilde error seems to have messed this up, test with actual Inklecate.
             Regex reLineNum = new Regex(@"\d+");
             int next = 0;
             int bailout = 0;
-            while(bailout < 20)
+            while(bailout < 100)
             {
                 next = errorMessage.IndexOf(target, current + 1);
                 if (next < 0) break;

@@ -94,7 +94,7 @@
         
         $("#start-fresh-button").click(function() { clearReplayChoices(); playInk(); });
         $("#replay-button").click(playInk);
-        
+    
         editor = ace.edit("inktext");
         editor.getSession().setMode("ace/mode/text");
         editor.getSession().setUseSoftTabs(true);
@@ -152,12 +152,12 @@
             playInkUrl,
             { "inktext": inktext, "sessionGuid": sessionGuid },
             function(results) {
-                if (results.errors) {
+                if (results.errors && results.errors.length > 0) {
                     var $errDiv = $('<div class="alert alert-danger">');
                     for(i = 0, len = results.errors.length; i < len; i++) {
-                        //MWCTODO: do something interesting with err.lineNumber and Ace.
-                        //MWCTODO: put a bit more spacing on these divs, too (make a new class).
-                        $errDiv.append($('<div>').html(results.errors[i].message));
+                        $errDiv.append($('<div class="cate-error">').html(results.errors[i].message));
+                        //editor.session.addGutterDecoration seems tempting, but doesn't auto-adjust up/down if you add/remove lines. :(
+                        // could get fancy with editor.session.on('change') and inspect the delta . . . but not going there any time soon.
                     }
                     $inkStatusDiv.append($errDiv);
                 } else {
