@@ -152,14 +152,18 @@
             playInkUrl,
             { "inktext": inktext, "sessionGuid": sessionGuid },
             function(results) {
+                editor.session.clearAnnotations();
+                
                 if (results.errors && results.errors.length > 0) {
+                    var annos = [];
                     var $errDiv = $('<div class="alert alert-danger">');
                     for(i = 0, len = results.errors.length; i < len; i++) {
+                        annos.push({ row: results.errors[i].lineNumber - 1, column: 0, text: results.errors[i].message, type: "error" });
                         $errDiv.append($('<div class="cate-error">').html(results.errors[i].message));
-                        //editor.session.addGutterDecoration seems tempting, but doesn't auto-adjust up/down if you add/remove lines. :(
-                        // could get fancy with editor.session.on('change') and inspect the delta . . . but not going there any time soon.
                     }
+                    editor.session.setAnnotations(annos);
                     $inkStatusDiv.append($errDiv);
+                    editor.focus();
                 } else {
                     var replays = replayChoices.slice();
                     continueStory(null, replays);
