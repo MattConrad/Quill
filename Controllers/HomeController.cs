@@ -13,6 +13,7 @@ namespace Quill.Controllers
         public static readonly string _inkJsonsDirectory = "/AppData/InkJsons/";
         public static readonly string _rawInksDirectory = "/AppData/RawInks/";
         private static readonly string _gameStatesDirectory = "/AppData/GameStates/";
+        private static readonly string _permaplaysDirectory = "/Permaplays/";
 
         //_rootPath is a filesystem path, for writing .ink/.jsons. _webAppPath is a URL modifier that is used instead of ~ (tilde, ofc, doesn't work with nginx)
         //  tilde handling is under discussion: https://github.com/aspnet/Announcements/issues/57  doesn't quite look like this is speaking to my issue, though.
@@ -25,16 +26,32 @@ namespace Quill.Controllers
             _webAppPath = config["WebAppPath"];
         }
         
-        public IActionResult Index()
+        public ViewResult Index()
         {
             ViewBag.SessionGuid = Guid.NewGuid();
             ViewBag.WebAppPath = _webAppPath;
             return View();
         }
         
-        public IActionResult ContinueStory(Guid sessionGuid, int? choiceIndex) 
+        public ViewResult PlayOnly(string playId)
         {
-            string inkJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
+            ViewBag.SessionGuid = Guid.NewGuid();
+            ViewBag.WebAppPath = _webAppPath;
+            ViewBag.PlayId = playId;
+            
+            //make sure it's a valid path.
+            string inkPath = _rootPath + _permaplaysDirectory + playId + ".json";
+            ViewBag.InkFileExists = System.IO.File.Exists(inkPath);
+            
+            return View();
+        }
+
+        public JsonResult ContinueStory(Guid sessionGuid, string playId, int? choiceIndex) 
+        {
+            //if we have a playId, this is a permaplay story, and we load it from permaplays insetad of inkJsons.
+            string inkJsonPath = string.IsNullOrEmpty(playId)
+                ? _rootPath + _inkJsonsDirectory + sessionGuid + ".json"
+                : _rootPath + _permaplaysDirectory + playId + ".json";
             string gameStatePath = _rootPath + _gameStatesDirectory + sessionGuid + ".json";
             
             //if no choices at all, this means we're starting a new story.
@@ -53,7 +70,18 @@ namespace Quill.Controllers
             return Json(outputs);
         }
         
-        public IActionResult PlayInk(string inktext, Guid sessionGuid)
+        private JsonResult StartNewStory(string inkJsonPath, string gameStatePath)
+        {
+            var story = Models.InkMethods.LoadEmptyStory(inkJsonPath);
+
+            List<InkOutputMessage> outputs = InkMethods.GetStoryOutputMessages(story);
+
+            InkMethods.SaveStory(gameStatePath, story);
+
+            return Json(outputs);
+        }
+        
+        public JsonResult PlayInk(string inktext, Guid sessionGuid)
         {
             try 
             {
@@ -91,7 +119,7 @@ namespace Quill.Controllers
             {
                 try 
                 {
-                    var errors = GetInklecateErrors(x.Message);            
+                    var errors = GetInklecateErrors(x.Message); 
                     return Json(new { errors = errors });
                 }
                 //MWCTODO: this means GetInklecateErrors() threw a new exception, should also write to the internal log (figure out the RC2 way of doing this)
@@ -152,18 +180,6 @@ namespace Quill.Controllers
            
            errs.Add(new CateError() { Message = msg, LineNumber = line }); 
         }
-        
-        private IActionResult StartNewStory(string inkJsonPath, string gameStatePath)
-        {
-            var story = Models.InkMethods.LoadEmptyStory(inkJsonPath);
-
-            List<InkOutputMessage> outputs = InkMethods.GetStoryOutputMessages(story);
-
-            InkMethods.SaveStory(gameStatePath, story);
-
-            return Json(outputs);
-        }
-        
         
     }
 }

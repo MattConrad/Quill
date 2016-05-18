@@ -42,7 +42,10 @@ namespace Quill.Models
             {
                 outputs.Add(new InkOutputMessage() { MessageType = InkOutputMessageTypes.Text, OutputText = story.Continue() });
             }
+            
             outputs.AddRange(story.currentChoices.Select(c => new InkOutputMessage() { MessageType = InkOutputMessageTypes.Choice, ChoiceIndex = c.index, OutputText = c.text }));
+            
+            outputs = outputs.Select(o => { o.OutputText = System.Net.WebUtility.HtmlEncode(o.OutputText); return o; }).ToList();
 
             return outputs;
         }

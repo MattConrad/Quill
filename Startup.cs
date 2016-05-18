@@ -50,6 +50,11 @@ namespace Quill
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
+                    "perma",
+                    "play/{playId}",
+                    new { controller = "Home", action = "PlayOnly" }
+                );                
+                routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });

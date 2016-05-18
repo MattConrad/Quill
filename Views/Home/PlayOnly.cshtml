@@ -1,0 +1,89 @@
+@{
+    string webAppPath = ViewBag.WebAppPath == null ? "/" : (string)ViewBag.WebAppPath;
+}
+
+<form>
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <p>Welcome! Enjoy playing the story. If you'd like to try writing one of your own, see the main Quill page.</p>
+        </div>
+    </div>
+    <hr>
+    <div class="row" style="padding-top: 10px;" >
+        <div class="col-md-6 col-md-offset-3 col-xs-12">
+            <div id="story-main-div" class="col-md-12"></div>
+            <div id="story-choices-div" class="col-md-12"></div>
+            <div id="story-status-div" class="col-md-12"></div>
+            <!--reset-story link somewhere down in here?-->
+        </div>
+    </div>
+</form>
+
+@section scripts {
+
+<script type="text/javascript">
+    var continueStoryUrl = '@(webAppPath)Home/ContinueStory';
+    var sessionGuid = '@(((Guid)ViewBag.SessionGuid).ToString())';
+    var playId = '@ViewBag.PlayId.ToString()';
+
+    var $storyMainDiv;
+    var $storyChoicesDiv;
+    var $storyStatusDiv;
+    
+    $(document).ready(function () {
+        $storyMainDiv = $("#story-main-div");
+        $storyChoicesDiv = $("#story-choices-div");
+        $storyStatusDiv = $("#story-status-div");
+
+        $storyChoicesDiv.on('click', '.story-choice-link', function () {
+            $storyChoicesDiv.empty();
+            continueStory($(this).data('cindex'), null);
+            return false;
+        })
+        
+        continueStory(null);
+    });
+    
+    function emptyAll() {
+        $storyMainDiv.empty();
+        $storyChoicesDiv.empty();
+        $storyStatusDiv.empty();
+    }
+
+    function continueStory(choiceIndex) {
+        $("#story-main-div p.new-text").removeClass("new-text");
+
+        $.getJSON(
+            continueStoryUrl,
+            { "sessionGuid": sessionGuid, "playId": playId, "choiceIndex": choiceIndex },
+            function (messages) {
+                var currentChoices = processStoryMessages(messages);
+            }
+        );
+    }
+
+    //displays results from the current message set, and returns the set of valid choices for the present halt (for possibly choice replaying).
+    function processStoryMessages(messages) {
+        var currentChoices = [];
+        for (var i = 0; i < messages.length; i++) {
+            if (messages[i].messageType == 'text') {
+                $storyMainDiv.append($('<p class="new-text"></p>').html(messages[i].outputText));
+            } else if (messages[i].messageType == 'choice') {
+                currentChoices.push(messages[i].choiceIndex);
+                $storyChoicesDiv.append($('<p><a href="#" class="story-choice-link" data-cindex="' + messages[i].choiceIndex + '">' + messages[i].outputText + '</a></p>'));
+            } else if (messages[i].messageType == 'error') {
+                $storyMainDiv.append($('<p class="alert alert-danger"></p>').html(messages[i].outputText));
+            }
+        }
+
+        if (messages.length > 0 && currentChoices.length > 0) $storyMainDiv.append('<hr />');
+        
+        if (currentChoices.length == 0) $storyChoicesDiv.append($('<p></p>').html('<em>(story complete)</em>'));
+
+        $storyMainDiv.scrollTop($storyMainDiv.prop('scrollHeight') - $storyMainDiv.innerHeight());
+        $storyChoicesDiv.scrollTop($storyChoicesDiv.prop('scrollHeight') - $storyChoicesDiv.innerHeight());
+        
+        return currentChoices;
+    }
+</script>
+}
