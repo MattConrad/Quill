@@ -14,6 +14,7 @@ namespace Quill.Controllers
         public static readonly string _rawInksDirectory = "/AppData/RawInks/";
         private static readonly string _gameStatesDirectory = "/AppData/GameStates/";
         private static readonly string _permaplaysDirectory = "/Permaplays/";
+        private static object _lock = new object();
 
         //_rootPath is a filesystem path, for writing .ink/.jsons. _webAppPath is a URL modifier that is used instead of ~ (tilde, ofc, doesn't work with nginx)
         //  tilde handling is under discussion: https://github.com/aspnet/Announcements/issues/57  doesn't quite look like this is speaking to my issue, though.
@@ -79,6 +80,44 @@ namespace Quill.Controllers
             InkMethods.SaveStory(gameStatePath, story);
 
             return Json(outputs);
+        }
+        
+        public JsonResult GetPermalink(Guid sessionGuid)
+        {
+            string currentJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
+            
+            string permaId;
+            lock(_lock)
+            {
+                long ticks = (DateTime.UtcNow - new DateTime(2016, 01, 01)).Ticks;
+                permaId = Helpers.Utils.EncodeTicks(ticks);
+                string permaFilename = _rootPath + _permaplaysDirectory + permaId + ".json";
+                
+                //not much chance of collision, but if there is one, bump forward a tick until an open slot found.                
+                while (System.IO.File.Exists(permaFilename)) 
+                {
+                    ticks++;
+                    permaId = Helpers.Utils.EncodeTicks(ticks);
+                    permaFilename = _rootPath + _permaplaysDirectory + permaId + ".json";
+                }
+                
+                System.IO.File.Copy(currentJsonPath, permaFilename);
+            }
+            
+            //http://stackoverflow.com/questions/31617345/what-is-the-asp-net-core-mvc-equivalent-to-request-requesturi
+            string[] hostComponents = Request.Host.ToUriComponent().Split(':');
+            var builder = new UriBuilder
+            {
+                Scheme = Request.Scheme,
+                Host = hostComponents[0],
+                Path = "play/" + permaId,
+            };
+            if (hostComponents.Length == 2)
+            {
+                builder.Port = Convert.ToInt32(hostComponents[1]);
+            }
+
+            return Json(new { link = builder.Uri });
         }
         
         public JsonResult PlayInk(string inktext, Guid sessionGuid)

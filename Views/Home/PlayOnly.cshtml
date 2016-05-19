@@ -1,24 +1,38 @@
 @{
     string webAppPath = ViewBag.WebAppPath == null ? "/" : (string)ViewBag.WebAppPath;
+    bool inkFileExists = (bool)ViewBag.InkFileExists;
 }
 
 <form>
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-            <p>Welcome! Enjoy playing the story. If you'd like to try writing one of your own, see the main Quill page.</p>
+    @if (inkFileExists) 
+    {
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3 col-xs-12">
+                <p>Welcome! Enjoy playing this story.</p>
+                <p>If you'd like to try writing one of your own, see the <a href="@(webAppPath)">main Quill page</a>.</p>
+            </div>
         </div>
-    </div>
-    <hr>
-    <div class="row" style="padding-top: 10px;" >
-        <div class="col-md-6 col-md-offset-3 col-xs-12">
-            <div id="story-main-div" class="col-md-12"></div>
-            <div id="story-choices-div" class="col-md-12"></div>
-            <div id="story-status-div" class="col-md-12"></div>
-            <!--reset-story link somewhere down in here?-->
+        <hr>
+        <div class="row" style="padding-top: 10px;" >
+            <div class="col-md-6 col-md-offset-3 col-xs-12">
+                <div id="story-main-div" class="col-md-12"></div>
+                <div id="story-choices-div" class="col-md-12"></div>
+                <div id="story-status-div" class="col-md-12"></div>
+                <!--reset-story link somewhere down in here?-->
+            </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3 col-xs-12">
+                <p>Sorry, we weren't able to find the Ink story you requested. Your link may be in error or the story may have been removed.</p>
+            </div>
+        </div>
+    }
 </form>
 
+@* below is very similar to main page, if you start making a lot of changes to this and the main page both, refactor. *@
 @section scripts {
 
 <script type="text/javascript">

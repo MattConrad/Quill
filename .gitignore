@@ -3,6 +3,7 @@
 
 # Quill-specific ignores
 AppData/
+Permaplays/
 
 # User-specific files
 *.suo

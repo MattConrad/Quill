@@ -57,6 +57,7 @@
 <script type="text/javascript">
     var customStorageKey = 'customink';
     var playInkUrl = '@(webAppPath)Home/PlayInk';
+    var getPermalinkUrl = '@(webAppPath)Home/GetPermalink';
     var continueStoryUrl = '@(webAppPath)Home/ContinueStory';
     var sessionGuid = '@(((Guid)ViewBag.SessionGuid).ToString())';
     var replayChoices = [];
@@ -127,6 +128,17 @@
     function clearReplayChoices() {
         replayChoices = [];
         $("#replay-button").attr('disabled', 'disabled');
+    }
+    
+    function getPermalink() {
+        $.post(
+            getPermalinkUrl,
+            { "sessionGuid": sessionGuid },
+            function(results) {
+                console.log(results);
+                //MWCTODO: display link in a input field, leave button disabled.
+            }
+        )
     }
    
     function playInk() {
