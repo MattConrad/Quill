@@ -110,7 +110,7 @@ namespace Quill.Controllers
             {
                 Scheme = Request.Scheme,
                 Host = hostComponents[0],
-                Path = "play/" + permaId,
+                Path = _webAppPath + "play/" + permaId,
             };
             if (hostComponents.Length == 2)
             {
