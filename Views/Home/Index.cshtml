@@ -14,39 +14,53 @@
     <hr>
     
     <div class="row">
-        <div class="col-md-3">
-            <p class="form-control-static">Choose an example (or write your own):</p>
-        </div>
-        <div class="col-md-3">
-            <select id="story-example-select" class="form-control">
-                <option value="0">(write your own Ink)</option>
-                <option value="1">The Wager</option>
-                <option value="2">Whack A Mole</option>
-                <option value="3">Cloak of Darkness</option>
-                <option value="4">The Intercept (very long)</option>
-            </select>
-        </div>
-    </div>
-    
-    <div class="row" style="padding-top: 10px;" >
-        <div class="col-md-6 col-xs-12" style="padding-bottom: 10px;">
-            <div id="ink-div" style="padding-bottom: 10px;">
-                <div id="inktext"></div>
+        <div class="col-md-6 col-xs-12">
+            <div class="col-md-6 col-xs-12 pb10">
+                <p class="form-control-static">Choose a sample (or write your own):</p>
             </div>
-            <div id="start-fresh-div" class="col-md-6 centered" style="padding-bottom: 10px;">
+            <div class="col-md-6 col-xs-12 pb10">
+                <select id="story-example-select" class="form-control">
+                    <option value="0">(write your own Ink)</option>
+                    <option value="1">The Wager</option>
+                    <option value="2">Whack A Mole</option>
+                    <option value="3">Cloak of Darkness</option>
+                    <option value="4">The Intercept (very long)</option>
+                </select>
+            </div>
+            
+            <div id="ink-div" class="col-md-12 col-xs-12 pb10">
+                <div id="inktext" class="grey-border"></div>
+            </div>
+            <div id="start-fresh-div" class="col-md-6 col-xs-12 centered pb10">
                 <span id="waiting-span" class="glyphicon glyphicon-time" aria-hidden="true" style="display: none;">&nbsp;</span>
                 <input id="start-fresh-button" type="button" class="btn btn-default" value="Play Ink (Start Fresh)" />
             </div>
-            <div id="replay-div" class="col-md-6 centered" style="padding-bottom: 10px;">
+            <div id="replay-div" class="col-md-6 col-xs-12 centered pb10">
                 <input id="replay-button" type="button" class="btn btn-default" value="Play Ink (Replay Choices)" disabled="disabled" />
             </div>
-            <div id="ink-status-div" class="col-md-12" style="padding-bottom: 10px;"></div>
+            <div id="ink-status-div" class="col-md-12 col-xs-12 pb10"></div>
         </div>
         
-        <div class="col-md-6 col-xs-12">
-            <div id="story-main-div" class="col-md-12"></div>
-            <div id="story-choices-div" class="col-md-12"></div>
+        <div class="col-md-6 col-xs-12 pb10">
+            <div id="story-top-spacer-div" class="col-md-12" style="min-height: 44px;" ></div>
+            <div id="story-block-div" class="col-md-12" style="">
+                <div id="story-main-div" class="col-md-12"></div>
+                <div id="story-choices-div" class="col-md-12"></div>
+            </div>
+            
+            <div class="col-md-4 col-xs-6 pb10">
+                <span id="get-permalink-span" style="display: none;" >
+                    <input id="get-permalink-button" type="button" class="btn btn-default" value="Get Permalink" />
+                    &nbsp;
+                    <span data-toggle="tooltip" data-placement="top" title="Permalinks provide a link to the finished story, allowing other people to play without the Ink source code." class="form-control-static glyphicon glyphicon-question-sign"></span>
+                </span>
+            </div>
+            <div class="col-md-8 col-xs-6 pb10" style="min-height: 44px;">
+                <input id="permalink-input" type="text" class="form-control" style="display: none;" ></input>
+            </div>
+
             <div id="story-status-div" class="col-md-12"></div>
+            
         </div>
     </div>
 </form>
@@ -91,10 +105,18 @@
             } else {
                 editor.setValue(examples[exampleIndex], -1);
             }
+            
+            $("#get-permalink-span").hide();
+            $("#permalink-input").hide();
+            $("#permalink-input").val('');
+            $("#story-block-div").removeClass("grey-border");
         });
+        
+        $('[data-toggle="tooltip"]').tooltip();         
         
         $("#start-fresh-button").click(function() { clearReplayChoices(); playInk(); });
         $("#replay-button").click(playInk);
+        $("#get-permalink-button").click(getPermalink);
     
         editor = ace.edit("inktext");
         editor.getSession().setMode("ace/mode/text");
@@ -135,8 +157,9 @@
             getPermalinkUrl,
             { "sessionGuid": sessionGuid },
             function(results) {
-                console.log(results);
-                //MWCTODO: display link in a input field, leave button disabled.
+                $("#permalink-input").show();
+                $("#permalink-input").val(results.link);
+                $("#get-permalink-button").attr('disabled', 'disabled');
             }
         )
     }
@@ -177,6 +200,10 @@
                     $inkStatusDiv.append($errDiv);
                     editor.focus();
                 } else {
+                    $("#get-permalink-span").show();
+                    $("#get-permalink-button").removeAttr('disabled');
+                    $("#permalink-input").hide();
+                    $("#story-block-div").addClass("grey-border");
                     var replays = replayChoices.slice();
                     continueStory(null, replays);
                 }

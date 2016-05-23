@@ -17,8 +17,7 @@
             <div class="col-md-6 col-md-offset-3 col-xs-12">
                 <div id="story-main-div" class="col-md-12"></div>
                 <div id="story-choices-div" class="col-md-12"></div>
-                <div id="story-status-div" class="col-md-12"></div>
-                <!--reset-story link somewhere down in here?-->
+                <div id="story-restart-div" class="col-md-12" style="display: none;"><em>(Story is complete. You can <a id="restart-link" href="#">restart the story</a> and play again from the beginning.)</em></div>
             </div>
         </div>
     }
@@ -47,13 +46,14 @@
     $(document).ready(function () {
         $storyMainDiv = $("#story-main-div");
         $storyChoicesDiv = $("#story-choices-div");
-        $storyStatusDiv = $("#story-status-div");
 
         $storyChoicesDiv.on('click', '.story-choice-link', function () {
             $storyChoicesDiv.empty();
             continueStory($(this).data('cindex'), null);
             return false;
         })
+        
+        $("#restart-link").click(function(e) { e.preventDefault(); window.location.reload(false); })
         
         continueStory(null);
     });
@@ -92,7 +92,7 @@
 
         if (messages.length > 0 && currentChoices.length > 0) $storyMainDiv.append('<hr />');
         
-        if (currentChoices.length == 0) $storyChoicesDiv.append($('<p></p>').html('<em>(story complete)</em>'));
+        if (currentChoices.length == 0) $("#story-restart-div").show();
 
         $storyMainDiv.scrollTop($storyMainDiv.prop('scrollHeight') - $storyMainDiv.innerHeight());
         $storyChoicesDiv.scrollTop($storyChoicesDiv.prop('scrollHeight') - $storyChoicesDiv.innerHeight());

@@ -42,15 +42,20 @@ textarea {
     white-space: pre;
     word-wrap: normal;
     font-family: "Courier New", Courier, monospace;
-    border: solid 1px #DDD;
 }
 
 div.cate-error {
    padding: 2px 0 2px 0; 
 }
 
+#story-block-div {
+    height: 590px; 
+    padding-top: 10px; 
+    margin-bottom: 10px;    
+}
+
 #story-main-div {
-    max-height: 450px;
+    max-height: 440px;
     overflow-y: auto;
 }
 
@@ -63,6 +68,16 @@ div.cate-error {
     font-weight: bold;
 }
 
+.grey-border {
+    border: solid 1px #DDD; 
+}
+
 .centered {
     text-align: center;
 }
+
+.pb10 {
+    padding-bottom: 10px;
+}
+
+
