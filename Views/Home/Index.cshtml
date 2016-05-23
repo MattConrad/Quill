@@ -15,6 +15,13 @@
     
     <div class="row">
         <div class="col-md-6 col-xs-12">
+            <div id="autoreplay-div" class="col-md-12">
+                <div class="checkbox">
+                    <label>
+                        <input id="autoplay-checkbox" type="checkbox"> Automatically replay my story as I make changes
+                    </label>
+                </div>
+            </div>
             <div class="col-md-6 col-xs-12 pb10">
                 <p class="form-control-static">Choose a sample (or write your own):</p>
             </div>
@@ -27,7 +34,6 @@
                     <option value="4">The Intercept (very long)</option>
                 </select>
             </div>
-            
             <div id="ink-div" class="col-md-12 col-xs-12 pb10">
                 <div id="inktext" class="grey-border"></div>
             </div>
@@ -42,7 +48,6 @@
         </div>
         
         <div class="col-md-6 col-xs-12 pb10">
-            <div id="story-top-spacer-div" class="col-md-12" style="min-height: 44px;" ></div>
             <div id="story-block-div" class="col-md-12" style="">
                 <div id="story-main-div" class="col-md-12"></div>
                 <div id="story-choices-div" class="col-md-12"></div>
@@ -69,7 +74,9 @@
 
 <script src="@(webAppPath)lib/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
-    var customStorageKey = 'customink';
+    var customInkKey = 'customink';
+    var autoplayKey = 'autoplay';
+    var suspendAutoplay = false;
     var playInkUrl = '@(webAppPath)Home/PlayInk';
     var getPermalinkUrl = '@(webAppPath)Home/GetPermalink';
     var continueStoryUrl = '@(webAppPath)Home/ContinueStory';
@@ -81,6 +88,7 @@
     var $storyStatusDiv;
     var $inkStatusDiv;
     
+    var timer = 0;
     var editor;
     
     $(document).ready(function () {
@@ -101,7 +109,7 @@
             var exampleIndex = parseInt($("#story-example-select").val());
             
             if (exampleIndex == 0) {
-                editor.setValue(loadLocal(), -1);
+                editor.setValue(loadLocalInkText(), -1);
             } else {
                 editor.setValue(examples[exampleIndex], -1);
             }
@@ -117,14 +125,25 @@
         $("#start-fresh-button").click(function() { clearReplayChoices(); playInk(); });
         $("#replay-button").click(playInk);
         $("#get-permalink-button").click(getPermalink);
+        
+        $("#autoplay-checkbox").prop('checked', loadLocalAutoplay());
+        $("#autoplay-checkbox").change(saveLocalAutoplay);
     
         editor = ace.edit("inktext");
         editor.getSession().setMode("ace/mode/text");
         editor.getSession().setUseSoftTabs(true);
-        
-        editor.setValue(loadLocal(), -1);
+        editor.setValue(loadLocalInkText(), -1);
         editor.focus();
+        
+        editor.on("change", function(e) { autoReplay(e); });        
     });
+    
+    function autoReplay(e){
+        clearTimeout (timer);
+        if (loadLocalAutoplay() && !suspendAutoplay) {
+            timer = setTimeout(playInk, 2000);
+        }
+    };
     
     function emptyAll() {
         $storyMainDiv.empty();
@@ -133,13 +152,22 @@
         $inkStatusDiv.empty();
     }
     
-    //we're going to assume a browser that supports localStorage.
-    function loadLocal() {
-        return localStorage.getItem(customStorageKey) || "";
+    function loadLocalAutoplay() {
+        return localStorage.getItem(autoplayKey) == "true";
+    }
+
+    function saveLocalAutoplay() {
+        var auto = $("#autoplay-checkbox").is(":checked").toString();
+        localStorage.setItem(autoplayKey, auto);
     }
     
-    function saveLocal(inktext) {
-        localStorage.setItem(customStorageKey, inktext);
+    //we're going to assume a browser that supports localStorage.
+    function loadLocalInkText() {
+        return localStorage.getItem(customInkKey) || "";
+    }
+    
+    function saveLocalInkText(inktext) {
+        localStorage.setItem(customInkKey, inktext);
     }
     
     function addReplayChoice(choiceIndex) {
@@ -165,6 +193,7 @@
     }
    
     function playInk() {
+        suspendAutoplay = true;
         emptyAll();
         
         var inktext = editor.getValue();
@@ -175,7 +204,7 @@
         }
         
         if ($("#story-example-select").val() == '0') {
-            saveLocal(inktext);
+            saveLocalInkText(inktext);
         }
 
         //it takes a moment for play to run, help the user see what's going on.
@@ -188,6 +217,7 @@
             { "inktext": inktext, "sessionGuid": sessionGuid },
             function(results) {
                 editor.session.clearAnnotations();
+                suspendAutoplay = false;
                 
                 if (results.errors && results.errors.length > 0) {
                     var annos = [];

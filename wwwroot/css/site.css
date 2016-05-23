@@ -49,13 +49,13 @@ div.cate-error {
 }
 
 #story-block-div {
-    height: 590px; 
+    height: 675px; 
     padding-top: 10px; 
     margin-bottom: 10px;    
 }
 
 #story-main-div {
-    max-height: 440px;
+    max-height: 525px;
     overflow-y: auto;
 }
 
