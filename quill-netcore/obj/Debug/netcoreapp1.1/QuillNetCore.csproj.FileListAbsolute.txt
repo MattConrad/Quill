@@ -1,9 +1,0 @@
-C:\work\ink\quill-netcore-temp\quill-netcore\quill-netcore\bin\Debug\netcoreapp1.1\QuillNetCore.deps.json
-C:\work\ink\quill-netcore-temp\quill-netcore\quill-netcore\bin\Debug\netcoreapp1.1\QuillNetCore.runtimeconfig.json
-C:\work\ink\quill-netcore-temp\quill-netcore\quill-netcore\bin\Debug\netcoreapp1.1\QuillNetCore.runtimeconfig.dev.json
-C:\work\ink\quill-netcore-temp\quill-netcore\quill-netcore\bin\Debug\netcoreapp1.1\QuillNetCore.dll
-C:\work\ink\quill-netcore-temp\quill-netcore\quill-netcore\bin\Debug\netcoreapp1.1\QuillNetCore.pdb
-C:\work\ink\quill-netcore-temp\quill-netcore\quill-netcore\obj\Debug\netcoreapp1.1\QuillNetCore.csprojResolveAssemblyReference.cache
-C:\work\ink\quill-netcore-temp\quill-netcore\quill-netcore\obj\Debug\netcoreapp1.1\QuillNetCore.AssemblyInfo.cs
-C:\work\ink\quill-netcore-temp\quill-netcore\quill-netcore\obj\Debug\netcoreapp1.1\QuillNetCore.dll
-C:\work\ink\quill-netcore-temp\quill-netcore\quill-netcore\obj\Debug\netcoreapp1.1\QuillNetCore.pdb
