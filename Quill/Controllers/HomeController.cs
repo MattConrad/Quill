@@ -161,7 +161,7 @@ namespace QuillNetCore.Controllers
                     var errors = GetInklecateErrors(x.Message); 
                     return Json(new { errors = errors });
                 }
-                //MWCTODO: this means GetInklecateErrors() threw a new exception, should also write to the internal log (figure out the RC2 way of doing this)
+                //MWCTODO: this means GetInklecateErrors() threw a new exception, should also write to the internal log (figure out the current netcore way of doing this)
                 catch
                 {
                     var error = new CateError() { Message = x.Message, LineNumber = 0 };
