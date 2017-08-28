@@ -8,7 +8,7 @@
   <PropertyGroup>
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <Content Include="wwwroot\lib\ace\ace.js" />
     <Content Include="wwwroot\lib\ace\ext-beautify.js" />
@@ -369,5 +369,23 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <!-- below this line, manually added. -->
+  <ItemGroup>
+    <Content Include="Views\**\*" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>  
+  <ItemGroup>
+    <Content Include="wwwroot\**\*" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>  
+  <ItemGroup>
+    <Content Include="AppData\**\*" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>  
+  <ItemGroup>
+    <Content Include="lib\**\*" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>  
+  <ItemGroup>
+    <Content Include="Permaplays\**\*" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>  
+
 
 </Project>

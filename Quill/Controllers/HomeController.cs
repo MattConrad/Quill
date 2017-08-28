@@ -81,7 +81,7 @@ namespace QuillNetCore.Controllers
 
             return Json(outputs);
         }
-        
+
         public JsonResult GetPermalink(Guid sessionGuid)
         {
             string currentJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";

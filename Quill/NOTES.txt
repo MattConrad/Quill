@@ -1,0 +1,4 @@
+﻿Very useful resource on publishing, resolved some issues: https://jonhilton.net/2016/08/18/publishing-your-net-core-web-app/
+https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-publish?tabs=netcore2x
+
+If you get a mysterious error, doublecheck resources actually got published.

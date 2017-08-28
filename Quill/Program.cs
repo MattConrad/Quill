@@ -11,9 +11,6 @@ namespace QuillNetCore
     {
         public static void Main(string[] args)
         {
-            //MWCTODO: published app can't find views when running "dotnet Quill.dll".
-            // this is a common problem, but so far solutions involve project.json which doesn't apply here.
-
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
