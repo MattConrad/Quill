@@ -5,14 +5,23 @@
 <form>
     <div class="row">
         <div class="col-md-12">
-            <p>This page runs Quill, a web app for playing and tinkering with <a href="https://github.com/inkle/ink">Ink</a> stories. (Ink is a mini-language for writing choose-your-own-adventure games.)</p>
-            <p>When you click Play, your Ink story will appear on the right and become playable. You can test out (and modify) the example snippets below, or play the short-but-complete Ink story The Intercept. If you're experimenting, <a href="https://github.com/inkle/ink/blob/master/Documentation/WritingWithInk.md">the Ink tutorial</a> may come in handy.</p>
+            <p class="alert alert-info">NOTICE: Quill will be getting an update on July 22. After the upgrade features from newer Ink versions will become available.</p>
+            <p class="alert alert-info">Permaplays created on this version of Quill won't work after the upgrade and will need to be recreated.</p>
+            <p class="alert alert-info">There will be some downtime around the upgrade. How long depends on how many complications I run into. Cross your fingers.</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <p>This page runs Quill, a web app for playing and tinkering with <a href="https://github.com/inkle/ink">Ink</a> stories. (Ink is a mini-language for writing choose-your-own-adventure games.)
+            </p>
+            <p>When you click Play, your Ink story will appear on the right and become playable. You can test out (and modify) the example snippets below, or play the short-but-complete Ink story The Intercept. If you're experimenting, <a href="https://github.com/inkle/ink/blob/master/Documentation/WritingWithInk.md">the Ink tutorial</a> may come in handy.
+            </p>
             <p>If you are playing a story and making revisions as you go along, you can use Play Ink (Replay Choices) to replay your previous path on the latest revision.</p>
         </div>
     </div>
 
     <hr>
-    
+
     <div class="row">
         <div class="col-md-6 col-xs-12">
             <div id="autoreplay-div" class="col-md-12">
@@ -39,33 +48,33 @@
             </div>
             <div id="start-fresh-div" class="col-md-6 col-xs-12 centered pb10">
                 <span id="waiting-span" class="glyphicon glyphicon-time" aria-hidden="true" style="display: none;">&nbsp;</span>
-                <input id="start-fresh-button" type="button" class="btn btn-default" value="Play Ink (Start Fresh)" />
+                <input id="start-fresh-button" type="button" class="btn btn-default" value="Play Ink (Start Fresh)"/>
             </div>
             <div id="replay-div" class="col-md-6 col-xs-12 centered pb10">
-                <input id="replay-button" type="button" class="btn btn-default" value="Play Ink (Replay Choices)" disabled="disabled" />
+                <input id="replay-button" type="button" class="btn btn-default" value="Play Ink (Replay Choices)" disabled="disabled"/>
             </div>
             <div id="ink-status-div" class="col-md-12 col-xs-12 pb10"></div>
         </div>
-        
+
         <div class="col-md-6 col-xs-12 pb10">
             <div id="story-block-div" class="col-md-12" style="">
                 <div id="story-main-div" class="col-md-12"></div>
                 <div id="story-choices-div" class="col-md-12"></div>
             </div>
-            
+
             <div class="col-md-4 col-xs-6 pb10">
-                <span id="get-permalink-span" style="display: none;" >
-                    <input id="get-permalink-button" type="button" class="btn btn-default" value="Get Permalink" />
+                <span id="get-permalink-span" style="display: none;">
+                    <input id="get-permalink-button" type="button" class="btn btn-default" value="Get Permalink"/>
                     &nbsp;
                     <span data-toggle="tooltip" data-placement="top" title="Permalinks provide a link to the finished story, allowing other people to play without the Ink source code." class="form-control-static glyphicon glyphicon-question-sign"></span>
                 </span>
             </div>
             <div class="col-md-8 col-xs-6 pb10" style="min-height: 44px;">
-                <input id="permalink-input" type="text" class="form-control" style="display: none;" ></input>
+                <input id="permalink-input" type="text" class="form-control" style="display: none;"></input>
             </div>
 
             <div id="story-status-div" class="col-md-12"></div>
-            
+
         </div>
     </div>
 </form>
