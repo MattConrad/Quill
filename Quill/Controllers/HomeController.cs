@@ -28,7 +28,7 @@ namespace QuillNetCore.Controllers
             _rootPath = System.IO.Directory.GetCurrentDirectory();
             //if you aren't running win-x64 or linux-x64 you'll need to alter this.
             _libExePath = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-                ? "/lib/linux-x64/cate-netcore.exe"
+                ? "/lib/linux-x64/cate-netcore"
                 : "/lib/win-x64/cate-netcore.exe";
             _webAppPath = config["WebAppPath"];
         }
