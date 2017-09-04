@@ -1,2 +1,0 @@
-﻿This is a straight-up binary download from https://github.com/inkle/ink/releases. Labeled for use in both Windows and Linux. Works on Windows as is.
-

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using QuillNetCore.Models;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
@@ -19,11 +20,16 @@ namespace QuillNetCore.Controllers
         //_rootPath is a filesystem path, for writing .ink/.jsons. _webAppPath is a URL modifier that is used instead of ~ (tilde, ofc, doesn't work with nginx)
         //  tilde handling is under discussion: https://github.com/aspnet/Announcements/issues/57  doesn't quite look like this is speaking to my issue, though.
         private string _rootPath;
+        private string _libExePath;
         private string _webAppPath;
 
         public HomeController(IConfigurationRoot config)
         {
             _rootPath = System.IO.Directory.GetCurrentDirectory();
+            //if you aren't running win-x64 or linux-x64 you'll need to alter this.
+            _libExePath = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                ? "/lib/linux-x64/cate-netcore.exe"
+                : "/lib/win-x64/cate-netcore.exe";
             _webAppPath = config["WebAppPath"];
         }
         
@@ -132,7 +138,8 @@ namespace QuillNetCore.Controllers
                 var processStartInfo = new ProcessStartInfo()
                 {
                     Arguments = " -o " + newJsonPath + " " + newInkPath,
-                    FileName = _rootPath + "/lib/inklecate.exe",
+                    //FileName = _rootPath + "/lib/inklecate.exe",
+                    FileName = _rootPath + _libExePath,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false
