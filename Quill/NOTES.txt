@@ -1,7 +1,0 @@
-﻿Very useful resource on publishing, resolved some issues: https://jonhilton.net/2016/08/18/publishing-your-net-core-web-app/
-https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-publish?tabs=netcore2x
-
-If you get a mysterious error, doublecheck resources actually got published.
-
-In order to get inklecate (cate-netcore) to work on Linux properly (hoped, not confirmed yet), a setting PublishWithAspNetCoreTargetManifest was added to that .csproj. This causes publishing cate-netcore to copy half the .NET Core framework alongside with the binary, which is a mess, but seems plausible as a fix for the error we got. We have not added PublishWithAspNetCoreTargetManifest here, but don't forget about it.
-

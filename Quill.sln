@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26730.8
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quill", "Quill\Quill.csproj", "{5DEF9AAA-FAA0-46CA-98FF-11231D1F2314}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quill", "Quill.csproj", "{8AD439E6-94FD-4178-B9F3-E15B6FF7BF2F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5DEF9AAA-FAA0-46CA-98FF-11231D1F2314}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5DEF9AAA-FAA0-46CA-98FF-11231D1F2314}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5DEF9AAA-FAA0-46CA-98FF-11231D1F2314}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5DEF9AAA-FAA0-46CA-98FF-11231D1F2314}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AD439E6-94FD-4178-B9F3-E15B6FF7BF2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AD439E6-94FD-4178-B9F3-E15B6FF7BF2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AD439E6-94FD-4178-B9F3-E15B6FF7BF2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AD439E6-94FD-4178-B9F3-E15B6FF7BF2F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {C655CCEB-02D4-4DB5-AF5C-35926A3151FE}
+		SolutionGuid = {D1F0B7B0-A6A2-45AB-B215-1AAC0321F3F5}
 	EndGlobalSection
 EndGlobal
