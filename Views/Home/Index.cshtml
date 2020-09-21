@@ -72,6 +72,7 @@
 @section scripts {
 
 <script src="@(webAppPath)lib/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+
 <script type="text/javascript">
     var customInkKey = 'customink';
     var autoplayKey = 'autoplay';
@@ -129,8 +130,8 @@
         $("#autoplay-checkbox").change(saveLocalAutoplay);
 
         editor = ace.edit("inktext");
-        editor.getSession().setMode("ace/mode/text");
-        editor.getSession().setUseSoftTabs(true);
+        editor.session.setMode("ace/mode/text");
+        editor.session.setUseSoftTabs(true);
         editor.setValue(loadLocalInkText(), -1);
         editor.focus();
 
@@ -256,7 +257,6 @@
             continueStoryUrl,
             { "sessionGuid": sessionGuid, "choiceIndex": choiceIndex },
             function (messages) {
-                debugger;
                 var currentChoices = processStoryMessages(messages);
 
                 if (replays && replays.length > 0 && currentChoices.length > 0) {

@@ -38,12 +38,13 @@ namespace Quill.Controllers
 
             // MWCTODO: this must be restored + fixed somehow, or maybe there's a better approach by now. this is fundamental, you won't even be able to test without it.
             //_webAppPath = config["WebAppPath"];
+            _webAppPath = @"/";
 
             // MWCTODO: we need the ace editor here. using Nuget doesn't actually bring it in. could just copy it from old version, but getting current could be good also.
 
 
         }
-        
+
         public ViewResult Index()
         {
             ViewBag.SessionGuid = Guid.NewGuid();

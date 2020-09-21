@@ -1,71 +1,164 @@
-﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-for details on configuring this project to bundle and minify static web assets. */
-
-a.navbar-brand {
-  white-space: normal;
-  text-align: center;
-  word-break: break-all;
+﻿body {
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
-/* Provide sufficient contrast against white background */
-a {
-  color: #0366d6;
+/*default is 20px, let's try 10.*/
+hr {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
-.btn-primary {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+/* Wrapping element */
+/* Set some basic padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
-.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+/* Set widths on the form inputs since otherwise they're 100% wide */
+/*
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+*/
+
+
+/*
+
+    story related CSS
+
+*/
+
+#ink-div {
+    height: 600px;
 }
 
-/* Sticky footer styles
--------------------------------------------------- */
-html {
-  font-size: 14px;
-}
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+#inktext {
+    height: 100%;
+    width: 100%;
+    white-space: pre;
+    word-wrap: normal;
+    font-family: "Courier New", Courier, monospace;
 }
 
-.border-top {
-  border-top: 1px solid #e5e5e5;
-}
-.border-bottom {
-  border-bottom: 1px solid #e5e5e5;
+div.cate-error {
+    padding: 2px 0 2px 0;
 }
 
-.box-shadow {
-  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+#story-block-div {
+    height: 675px;
+    padding-top: 10px;
+    margin-bottom: 10px;
 }
 
-button.accept-policy {
-  font-size: 1rem;
-  line-height: inherit;
+#story-main-div {
+    max-height: 525px;
+    overflow-y: auto;
 }
 
-/* Sticky footer styles
--------------------------------------------------- */
-html {
-  position: relative;
-  min-height: 100%;
+#story-choices-div {
+    height: 150px;
+    overflow-y: auto;
+}
+
+#story-main-div p.new-text {
+    font-weight: bold;
+}
+
+.grey-border {
+    border: solid 1px #DDD;
+}
+
+.centered {
+    text-align: center;
+}
+
+.pb10 {
+    padding-bottom: 10px;
 }
 
 body {
-  /* Margin bottom by footer height */
-  margin-bottom: 60px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
-.footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  white-space: nowrap;
-  line-height: 60px; /* Vertically center the text there */
+
+/*default is 20px, let's try 10.*/
+hr {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
+
+/* Wrapping element */
+/* Set some basic padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Set widths on the form inputs since otherwise they're 100% wide */
+/*
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+*/
+
+
+/*
+
+    story related CSS
+
+*/
+
+#ink-div {
+    height: 600px;
+}
+
+#inktext {
+    height: 100%;
+    width: 100%;
+    white-space: pre;
+    word-wrap: normal;
+    font-family: "Courier New", Courier, monospace;
+}
+
+div.cate-error {
+    padding: 2px 0 2px 0;
+}
+
+#story-block-div {
+    height: 675px;
+    padding-top: 10px;
+    margin-bottom: 10px;
+}
+
+#story-main-div {
+    max-height: 525px;
+    overflow-y: auto;
+}
+
+#story-choices-div {
+    height: 150px;
+    overflow-y: auto;
+}
+
+#story-main-div p.new-text {
+    font-weight: bold;
+}
+
+.grey-border {
+    border: solid 1px #DDD;
+}
+
+.centered {
+    text-align: center;
+}
+
+.pb10 {
+    padding-bottom: 10px;
+}
+
