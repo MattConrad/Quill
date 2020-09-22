@@ -30,14 +30,16 @@ namespace Quill
         {
             // MWCTODO: logging here?
 
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
+            //if (env.IsDevelopment())
+            //{
+            //    app.UseDeveloperExceptionPage();
+            //}
+            //else
+            //{
+            //    app.UseExceptionHandler("/Home/Error");
+            //}
+            app.UseExceptionHandler("/Error/HandleError");
+
             app.UseStaticFiles();
 
             app.UseRouting();
@@ -51,6 +53,19 @@ namespace Quill
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            //app.UseMvc(routes =>
+            //{
+            //    routes.MapRoute(
+            //        "perma",
+            //        "play/{playId}",
+            //        new { controller = "Home", action = "PlayOnly" }
+            //    );
+            //    routes.MapRoute(
+            //        name: "default",
+            //        template: "{controller=Home}/{action=Index}/{id?}");
+            //});
+
         }
     }
 }

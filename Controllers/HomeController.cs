@@ -55,6 +55,7 @@ namespace Quill.Controllers
             return View();
         }
         
+        // MWCTODO: this doesn't work yet because 
         public ViewResult PlayOnly(string playId)
         {
             ViewBag.SessionGuid = Guid.NewGuid();
@@ -105,7 +106,6 @@ namespace Quill.Controllers
 
         public JsonResult GetPermalink(Guid sessionGuid)
         {
-            // MWCTODO: doh problem is actually no permaplay directory. we need some error logging, stat.
             string currentJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
             
             string permaId;
