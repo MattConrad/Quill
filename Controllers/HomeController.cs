@@ -42,15 +42,11 @@ namespace Quill.Controllers
             //if you aren't running win-x64 or linux-x64 you'll need to alter this.
             _libExePath = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
                 ? "/lib/linux-x64/cate-netcore"
-                : "/lib/old-win-x64/cate-netcore.exe";
+                : "/lib/new-win-x64/inklecate.exe";
 
             // MWCTODO: this must be restored + fixed somehow, or maybe there's a better approach by now. this is fundamental, you won't even be able to test without it.
             //_webAppPath = config["WebAppPath"];
             _webAppPath = @"/";
-
-            // MWCTODO: we need the ace editor here. using Nuget doesn't actually bring it in. could just copy it from old version, but getting current could be good also.
-
-
         }
 
         public ViewResult Index()
