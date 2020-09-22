@@ -37,12 +37,11 @@ namespace Quill.Controllers
             //    ? "/lib/linux-x64/cate-netcore"
             //    : "/lib/win-x64/cate-netcore.exe";
 
-            // MWCTODO: the "old" binary works, the "new" one doesn't. I suspect we need a kajillion DLLs for the new, like we have for the old.
-            //     ofc, it would be better yet if we weren't calling the binary at all.
+            // MWCTODO: this isn't updated for linux. it will need to be.
             //if you aren't running win-x64 or linux-x64 you'll need to alter this.
             _libExePath = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
                 ? "/lib/linux-x64/cate-netcore"
-                : "/lib/new-win-x64/inklecate.exe";
+                : "/lib/win-x64/inklecate.exe";
 
             // MWCTODO: this must be restored + fixed somehow, or maybe there's a better approach by now. this is fundamental, you won't even be able to test without it.
             //_webAppPath = config["WebAppPath"];
@@ -106,7 +105,7 @@ namespace Quill.Controllers
 
         public JsonResult GetPermalink(Guid sessionGuid)
         {
-            // MWCTODO: this path and also the permaFilename below have mixed file separators and crash the File.Copy() call.
+            // MWCTODO: doh problem is actually no permaplay directory. we need some error logging, stat.
             string currentJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
             
             string permaId;
