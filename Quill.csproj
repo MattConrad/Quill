@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Inkle.Ink.Engine" Version="0.7.4" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.4" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
@@ -13,6 +12,24 @@
   <ItemGroup>
     <Folder Include="Helpers\" />
     <Folder Include="wwwroot\lib\ace\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ink-engine-runtime">
+      <HintPath>lib\ink-runtime\ink-engine-runtime.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="lib\ink-runtime\ink-engine-runtime.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\ink-runtime\ink-engine-runtime.pdb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\ink-runtime\ink-engine-runtime.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 
