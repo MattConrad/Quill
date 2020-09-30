@@ -79,8 +79,9 @@ namespace Quill.Controllers
                 : _rootPath + _permaplaysDirectory + playId + ".json";
             string gameStatePath = _rootPath + _gameStatesDirectory + sessionGuid + ".json";
 
-            try
-            {
+            // MWCTODO: restore this and add logging.
+            //try
+            //{
                 //if no choices at all, this means we're starting a new story.
                 if (!choiceIndex.HasValue) return StartNewStory(inkJsonPath, gameStatePath);
 
@@ -95,12 +96,12 @@ namespace Quill.Controllers
                 InkMethods.SaveStory(gameStatePath, story);
 
                 return Json(outputs);
-            }
-            catch (Exception x)
-            {
-                string[] errors = new string[] { "MWCTODO: bad shit happened, this needs to log details, probably send back specific info if it is an Ink.Runtime.StoryException." };
-                return Json(new { errors });
-            }
+            //}
+            //catch (Exception x)
+            //{
+            //    string[] errors = new string[] { "MWCTODO: bad shit happened, this needs to log details, probably send back specific info if it is an Ink.Runtime.StoryException." };
+            //    return Json(new { errors });
+            //}
 
         }
         

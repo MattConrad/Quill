@@ -20,7 +20,14 @@ namespace Quill
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder
+                        .ConfigureLogging((ctx, builder) =>
+                        {
+                            builder.AddConfiguration(ctx.Configuration.GetSection("Logging"));
+                            // MWCTODO: ContentRootPath is confusing name, but close to what we want. add AppData/logs/ though, maybe.
+                            builder.AddFile(o => o.RootPath = ctx.HostingEnvironment.ContentRootPath);
+                        })
+                        .UseStartup<Startup>();
                 });
     }
 }
