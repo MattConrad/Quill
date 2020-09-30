@@ -256,18 +256,29 @@
         $.getJSON(
             continueStoryUrl,
             { "sessionGuid": sessionGuid, "choiceIndex": choiceIndex },
-            function (messages) {
-                var currentChoices = processStoryMessages(messages);
+            function (response) {
+                if (response.errors) {
+                    // for now at least, errors are a simple array of strings. later we may make them fancier and parse them.
+                    var $errDiv = $('<div class="alert alert-danger">');
+                    for(i = 0, len = response.errors.length; i < len; i++) {
+                        $errDiv.append($('<div class="cate-error">').html(response.errors));
+                    }
+                    $inkStatusDiv.append($errDiv);
+                    editor.focus();
+                } else {
+                    // no errors: our response should be an array of message objects.
+                    var currentChoices = processStoryMessages(response);
 
-                if (replays && replays.length > 0 && currentChoices.length > 0) {
-                    var nextChoice = replays.shift();
-                    //it's possible that replay choices have been messed up by .ink revisions. check and handle if so.
-                    if (currentChoices.indexOf(nextChoice) >= 0) {
-                        $storyChoicesDiv.empty();
-                        continueStory(nextChoice, replays)
-                    } else {
-                        clearReplayChoices();
-                        $storyStatusDiv.append($('<p class="alert alert-danger"></p>').html('Replay choices are no longer valid due to story changes. Replay halted.'));
+                    if (replays && replays.length > 0 && currentChoices.length > 0) {
+                        var nextChoice = replays.shift();
+                        //it's possible that replay choices have been messed up by .ink revisions. check and handle if so.
+                        if (currentChoices.indexOf(nextChoice) >= 0) {
+                            $storyChoicesDiv.empty();
+                            continueStory(nextChoice, replays)
+                        } else {
+                            clearReplayChoices();
+                            $storyStatusDiv.append($('<p class="alert alert-danger"></p>').html('Replay choices are no longer valid due to story changes. Replay halted.'));
+                        }
                     }
                 }
             }

@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Quill.Controllers
 {
+    // MWCTODO: hey, we're far enough along now that we can actually test the scenario that that guy was talking about.
+
     public class HomeController : Controller
     {
         public static readonly string _inkJsonsDirectory = "/AppData/InkJsons/";
@@ -55,7 +57,7 @@ namespace Quill.Controllers
             return View();
         }
         
-        // MWCTODO: this doesn't work yet because 
+        // MWCTODO: this doesn't work yet because we aren't routing properly.
         public ViewResult PlayOnly(string playId)
         {
             ViewBag.SessionGuid = Guid.NewGuid();
@@ -76,21 +78,30 @@ namespace Quill.Controllers
                 ? _rootPath + _inkJsonsDirectory + sessionGuid + ".json"
                 : _rootPath + _permaplaysDirectory + playId + ".json";
             string gameStatePath = _rootPath + _gameStatesDirectory + sessionGuid + ".json";
-            
-            //if no choices at all, this means we're starting a new story.
-            if (!choiceIndex.HasValue) return StartNewStory(inkJsonPath, gameStatePath);
 
-            //there was a choiceIndex selected, which means we're continuing a saved story.
-            var story = InkMethods.RestoreStory(inkJsonPath, gameStatePath);
+            try
+            {
+                //if no choices at all, this means we're starting a new story.
+                if (!choiceIndex.HasValue) return StartNewStory(inkJsonPath, gameStatePath);
 
-            //much happens in the Ink runtime here.
-            story.ChooseChoiceIndex(choiceIndex.Value);
+                //there was a choiceIndex selected, which means we're continuing a saved story.
+                var story = InkMethods.RestoreStory(inkJsonPath, gameStatePath);
 
-            List<InkOutputMessage> outputs = InkMethods.GetStoryOutputMessages(story);
+                //much happens in the Ink runtime here.
+                story.ChooseChoiceIndex(choiceIndex.Value);
 
-            InkMethods.SaveStory(gameStatePath, story);
+                List<InkOutputMessage> outputs = InkMethods.GetStoryOutputMessages(story);
 
-            return Json(outputs);
+                InkMethods.SaveStory(gameStatePath, story);
+
+                return Json(outputs);
+            }
+            catch (Exception x)
+            {
+                string[] errors = new string[] { "MWCTODO: bad shit happened, this needs to log details, probably send back specific info if it is an Ink.Runtime.StoryException." };
+                return Json(new { errors });
+            }
+
         }
         
         private JsonResult StartNewStory(string inkJsonPath, string gameStatePath)
