@@ -19,7 +19,7 @@ namespace Quill.Controllers
         }
 
         // the actual exception, including stack trace, is automatically logged to the log file. 
-        // not sure exactly where this is triggered, but we don't need to repeat that part here.
+        // not sure exactly where this is triggered--i speculate it is considered "unhandled" when it comes here--but anyway we don't need to repeat stack trace here.
         public IActionResult HandleError()
         {
             var path = HttpContext.Features.Get<IExceptionHandlerPathFeature>();

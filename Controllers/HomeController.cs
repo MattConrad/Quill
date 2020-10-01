@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc;
+using Ink.Runtime;
 
 namespace Quill.Controllers
 {
@@ -72,38 +73,51 @@ namespace Quill.Controllers
 
         public JsonResult ContinueStory(Guid sessionGuid, string playId, int? choiceIndex) 
         {
-            //if we have a playId, this is a permaplay story, and we load it from permaplays insetad of inkJsons.
+            // if we have a playId, this is a permaplay story, and we load it from permaplays instead of inkJsons.
             string inkJsonPath = string.IsNullOrEmpty(playId)
                 ? _rootPath + _inkJsonsDirectory + sessionGuid + ".json"
                 : _rootPath + _permaplaysDirectory + playId + ".json";
             string gameStatePath = _rootPath + _gameStatesDirectory + sessionGuid + ".json";
 
-            // MWCTODO: restore this and add logging.
-            //try
-            //{
-                //if no choices at all, this means we're starting a new story.
+            try
+            {
+                // if no choices at all, this means we're starting a new story.
                 if (!choiceIndex.HasValue) return StartNewStory(inkJsonPath, gameStatePath);
 
-                //there was a choiceIndex selected, which means we're continuing a saved story.
+                // there was a choiceIndex selected, which means we're continuing a saved story.
                 var story = InkMethods.RestoreStory(inkJsonPath, gameStatePath);
 
-                //much happens in the Ink runtime here.
+                // much happens in the Ink runtime here.
                 story.ChooseChoiceIndex(choiceIndex.Value);
 
                 List<InkOutputMessage> outputs = InkMethods.GetStoryOutputMessages(story);
 
                 InkMethods.SaveStory(gameStatePath, story);
 
-                return Json(outputs);
-            //}
-            //catch (Exception x)
-            //{
-            //    string[] errors = new string[] { "MWCTODO: bad shit happened, this needs to log details, probably send back specific info if it is an Ink.Runtime.StoryException." };
-            //    return Json(new { errors });
-            //}
+                return base.Json(outputs);
+            }
+            catch (Exception x)
+            {
+                string message;
 
+                if (x is StoryException)
+                {
+                    // we don't need to log story exceptions. we do want to parse the exception message a little.
+                    message = GetStoryExceptionMessage((StoryException)x);
+                }
+                else
+                {
+                    _logger.LogError(Environment.NewLine + "HANDLED EXCEPTION IN Home/ContinueStory" + Environment.NewLine + x.ToString(), null);
+
+                    message = "Some especially weird error occurred. If you get this message repeatedly, please file an issue at https://github.com/MattConrad/Quill/issues "
+                        + $"with a copy of this error text (/Home/ContinueStory {DateTime.Now})";
+                }
+
+                string[] errors = new string[] { message };
+                return base.Json(new { errors });
+            }
         }
-        
+
         private JsonResult StartNewStory(string inkJsonPath, string gameStatePath)
         {
             var story = Models.InkMethods.LoadEmptyStory(inkJsonPath);
@@ -112,7 +126,7 @@ namespace Quill.Controllers
 
             InkMethods.SaveStory(gameStatePath, story);
 
-            return Json(outputs);
+            return base.Json(outputs);
         }
 
         public JsonResult GetPermalink(Guid sessionGuid)
@@ -150,9 +164,22 @@ namespace Quill.Controllers
                 builder.Port = Convert.ToInt32(hostComponents[1]);
             }
 
-            return Json(new { link = builder.Uri });
+            return base.Json(new { link = builder.Uri });
         }
-        
+
+        private static string GetStoryExceptionMessage(StoryException x)
+        {
+            // i think these exceptions will always have the token text, but i'm not 100% sure. if we don't find the token, send back StoryException.Message entire.
+            string token = "error handler to story.onError. The first issue was: ";
+
+            int indexOfToken = x.Message.IndexOf(token);
+
+            return indexOfToken >= 0
+                ? x.Message.Substring(indexOfToken + token.Length)
+                : x.Message;
+        }
+
+
         public JsonResult PlayInk(string inktext, Guid sessionGuid)
         {
             try 
@@ -186,20 +213,20 @@ namespace Quill.Controllers
                 if (!string.IsNullOrEmpty(outputMessage)) throw new InvalidOperationException(FixInkMessages(newInkPath, outputMessage));
                 if (p.ExitCode != 0) throw new InvalidOperationException("Ink processing crashed. No details are available.");
                     
-                return Json(new { errors = new string[]{} });
+                return base.Json(new { errors = new string[]{} });
             }
             catch (Exception x)
             {
                 try 
                 {
                     var errors = GetInklecateErrors(x.Message); 
-                    return Json(new { errors = errors });
+                    return base.Json(new { errors = errors });
                 }
                 //MWCTODO: this means GetInklecateErrors() threw a new exception, should also write to the internal log (figure out the current netcore way of doing this)
                 catch
                 {
                     var error = new CateError() { Message = x.Message, LineNumber = 0 };
-                    return Json(new { errors = new List<CateError>() { error } });
+                    return base.Json(new { errors = new List<CateError>() { error } });
                 }
             }
         }
@@ -211,6 +238,7 @@ namespace Quill.Controllers
             return message.Replace(expectedPrefix, "");
         }
         
+        // MWCTODO: error format has changed, this will need reworked.
         private List<CateError> GetInklecateErrors(string errorMessage)
         {
             List<CateError> errs = new List<CateError>();

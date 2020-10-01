@@ -258,13 +258,15 @@
             { "sessionGuid": sessionGuid, "choiceIndex": choiceIndex },
             function (response) {
                 if (response.errors) {
-                    // for now at least, errors are a simple array of strings. later we may make them fancier and parse them.
+                    // for now at least, THESE errors are a simple array of strings. later we may make them fancier and parse them.
                     var $errDiv = $('<div class="alert alert-danger">');
                     for(i = 0, len = response.errors.length; i < len; i++) {
-                        $errDiv.append($('<div class="cate-error">').html(response.errors));
+                        $errDiv.append($('<div class="cate-error">').html(response.errors[i]));
                     }
                     $inkStatusDiv.append($errDiv);
                     editor.focus();
+
+                    // MWCTODO: in this branch we'd rather not enable the right hand pane. probably. not sure it's important enough to chase, though.
                 } else {
                     // no errors: our response should be an array of message objects.
                     var currentChoices = processStoryMessages(response);
