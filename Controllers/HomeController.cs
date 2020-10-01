@@ -11,7 +11,7 @@ using Ink.Runtime;
 
 namespace Quill.Controllers
 {
-    // MWCTODO: hey, we're far enough along now that we can actually test the scenario that that guy was talking about.
+    // MWCTODO: when you deploy to linux, be sure to set up upstart and tmpreaper, both, correctly.
 
     public class HomeController : Controller
     {
@@ -51,6 +51,11 @@ namespace Quill.Controllers
             _webAppPath = @"/";
         }
 
+        /* 
+         * public ViewResult methods
+         * 
+         */
+
         public ViewResult Index()
         {
             ViewBag.SessionGuid = Guid.NewGuid();
@@ -70,6 +75,11 @@ namespace Quill.Controllers
             
             return View();
         }
+
+        /* 
+         * public JsonResult methods
+         * 
+         */
 
         public JsonResult ContinueStory(Guid sessionGuid, string playId, int? choiceIndex) 
         {
@@ -113,20 +123,10 @@ namespace Quill.Controllers
                         + $"with a copy of this error text (/Home/ContinueStory {DateTime.Now})";
                 }
 
+                // MWCTODO: I don't really like having some "errors" be array of strings and others array of CateErrors. 
                 string[] errors = new string[] { message };
                 return base.Json(new { errors });
             }
-        }
-
-        private JsonResult StartNewStory(string inkJsonPath, string gameStatePath)
-        {
-            var story = Models.InkMethods.LoadEmptyStory(inkJsonPath);
-
-            List<InkOutputMessage> outputs = InkMethods.GetStoryOutputMessages(story);
-
-            InkMethods.SaveStory(gameStatePath, story);
-
-            return base.Json(outputs);
         }
 
         public JsonResult GetPermalink(Guid sessionGuid)
@@ -167,32 +167,18 @@ namespace Quill.Controllers
             return base.Json(new { link = builder.Uri });
         }
 
-        private static string GetStoryExceptionMessage(StoryException x)
-        {
-            // i think these exceptions will always have the token text, but i'm not 100% sure. if we don't find the token, send back StoryException.Message entire.
-            string token = "error handler to story.onError. The first issue was: ";
-
-            int indexOfToken = x.Message.IndexOf(token);
-
-            return indexOfToken >= 0
-                ? x.Message.Substring(indexOfToken + token.Length)
-                : x.Message;
-        }
-
-
         public JsonResult PlayInk(string inktext, Guid sessionGuid)
         {
-            try 
+            try
             {
                 string newInkPath = _rootPath + _rawInksDirectory + sessionGuid + ".ink";
                 string newJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
-                
+
                 System.IO.File.WriteAllText(newInkPath, inktext);
 
                 var processStartInfo = new ProcessStartInfo()
                 {
                     Arguments = " -o " + newJsonPath + " " + newInkPath,
-                    //FileName = _rootPath + "/lib/inklecate.exe",
                     FileName = _rootPath + _libExePath,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
@@ -202,24 +188,25 @@ namespace Quill.Controllers
                 Process p = new Process();
                 p.StartInfo = processStartInfo;
                 p.Start();
-                
+
                 //let's hope any syntax errs are found w/in a second
                 System.Threading.Thread.Sleep(1000);
                 string errorMessage = p.StandardError.ReadToEnd();
                 string outputMessage = p.StandardOutput.ReadToEnd();
                 p.WaitForExit(2000);
-                
+
                 if (!string.IsNullOrEmpty(errorMessage)) throw new InvalidOperationException(FixInkMessages(newInkPath, errorMessage));
                 if (!string.IsNullOrEmpty(outputMessage)) throw new InvalidOperationException(FixInkMessages(newInkPath, outputMessage));
                 if (p.ExitCode != 0) throw new InvalidOperationException("Ink processing crashed. No details are available.");
-                    
-                return base.Json(new { errors = new string[]{} });
+
+                return base.Json(new { errors = new string[] { } });
             }
             catch (Exception x)
             {
-                try 
+                try
                 {
-                    var errors = GetInklecateErrors(x.Message); 
+                    var errors = GetInklecateErrors(x.Message);
+
                     return base.Json(new { errors = errors });
                 }
                 //MWCTODO: this means GetInklecateErrors() threw a new exception, should also write to the internal log (figure out the current netcore way of doing this)
@@ -230,16 +217,48 @@ namespace Quill.Controllers
                 }
             }
         }
-        
+
+        /* 
+         * private JsonResult methods
+         * 
+         */
+
+        // StartNewStory is only called from within a try {} and does not need special error handling of its own.
+        private JsonResult StartNewStory(string inkJsonPath, string gameStatePath)
+        {
+            var story = Models.InkMethods.LoadEmptyStory(inkJsonPath);
+
+            List<InkOutputMessage> outputs = InkMethods.GetStoryOutputMessages(story);
+
+            InkMethods.SaveStory(gameStatePath, story);
+
+            return base.Json(outputs);
+        }
+
+        /* 
+         * all other private helper methods
+         *  
+         */
+
+        private static void AddCateError(string errorMessage, int start, int end, Regex re, ref List<CateError> errs)
+        {
+            int line = -1;
+            string msg = errorMessage.Substring(start, end);
+            string lineStr = re.Match(msg).Value;
+            if (!string.IsNullOrEmpty(lineStr)) line = int.Parse(lineStr);
+
+            errs.Add(new CateError() { Message = msg, LineNumber = line });
+        }
+
         //default ink syntax error messages prepend path/file, which is verbose and also useless here.
-        private string FixInkMessages(string newInkPath, string message)
+        private static string FixInkMessages(string newInkPath, string message)
         {
             string expectedPrefix = "'" + newInkPath + "' ";
             return message.Replace(expectedPrefix, "");
         }
         
         // MWCTODO: error format has changed, this will need reworked.
-        private List<CateError> GetInklecateErrors(string errorMessage)
+        private static List<CateError> GetInklecateErrors(string errorMessage)
         {
             List<CateError> errs = new List<CateError>();
             
@@ -271,16 +290,19 @@ namespace Quill.Controllers
             
             return errs;
         }
-        
-        private void AddCateError(string errorMessage, int start, int end, Regex re, ref List<CateError> errs)
+
+        private static string GetStoryExceptionMessage(StoryException x)
         {
-            int line = -1;
-            string msg = errorMessage.Substring(start, end);
-            string lineStr = re.Match(msg).Value;
-            if (!string.IsNullOrEmpty(lineStr)) line = int.Parse(lineStr);
-           
-           errs.Add(new CateError() { Message = msg, LineNumber = line }); 
+            // i think these exceptions will always have the token text, but i'm not 100% sure. if we don't find the token, send back StoryException.Message entire.
+            string token = "error handler to story.onError. The first issue was: ";
+
+            int indexOfToken = x.Message.IndexOf(token);
+
+            return indexOfToken >= 0
+                ? x.Message.Substring(indexOfToken + token.Length)
+                : x.Message;
         }
+
         
     }
 }

@@ -33,7 +33,6 @@ namespace Quill.Controllers
             var request = HttpContext.Request;
             bool isAjax = (request.Headers != null) && (request.Headers["X-Requested-With"] == "XMLHttpRequest");
 
-            // MWCTODO: my test scenario emits a message that has developer-specific instructions. probably should process that message better, but maybe here is not the place.
             if (isAjax)
             {
                 // i have to force a 200 here? something upstream appears to be magic causing a 500 if I don't force a 200.
