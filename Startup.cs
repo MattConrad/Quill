@@ -28,16 +28,6 @@ namespace Quill
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            // MWCTODO: logging here?
-
-            //if (env.IsDevelopment())
-            //{
-            //    app.UseDeveloperExceptionPage();
-            //}
-            //else
-            //{
-            //    app.UseExceptionHandler("/Home/Error");
-            //}
             app.UseExceptionHandler("/Error/HandleError");
 
             app.UseStaticFiles();
@@ -46,26 +36,19 @@ namespace Quill
 
             app.UseAuthorization();
 
-            // MWCTODO: this needs updated with the perma route
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
+                    name: "perma",
+                    pattern: "play/{playId}",
+                    defaults: new { controller = "Home", action = "PlayOnly" }
+                );
+
+                endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}"
+                );
             });
-
-            //app.UseMvc(routes =>
-            //{
-            //    routes.MapRoute(
-            //        "perma",
-            //        "play/{playId}",
-            //        new { controller = "Home", action = "PlayOnly" }
-            //    );
-            //    routes.MapRoute(
-            //        name: "default",
-            //        template: "{controller=Home}/{action=Index}/{id?}");
-            //});
-
         }
     }
 }

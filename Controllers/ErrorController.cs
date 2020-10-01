@@ -18,6 +18,8 @@ namespace Quill.Controllers
             _logger = logger;
         }
 
+        // the actual exception, including stack trace, is automatically logged to the log file. 
+        // not sure exactly where this is triggered, but we don't need to repeat that part here.
         public IActionResult HandleError()
         {
             var path = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
@@ -25,16 +27,17 @@ namespace Quill.Controllers
             var message = path?.Error?.Message ?? "(failed to retrieve exception message)";
             var pathString = path?.Path ?? "(failed to retrieve exception path)";
 
-            string logMessage = message + Environment.NewLine + Environment.NewLine + Environment.NewLine + "***" + Environment.NewLine;
+            string logMessage = Environment.NewLine + "***" + Environment.NewLine + pathString + Environment.NewLine + message + Environment.NewLine + "***" + Environment.NewLine;
             _logger.LogError(logMessage, null);
 
             var request = HttpContext.Request;
             bool isAjax = (request.Headers != null) && (request.Headers["X-Requested-With"] == "XMLHttpRequest");
 
+            // MWCTODO: my test scenario emits a message that has developer-specific instructions. probably should process that message better, but maybe here is not the place.
             if (isAjax)
             {
-                // MWCTODO: you probably DON'T want a 500 here, because the client doesn't really expect them, it expects an .errors property on a 200 response.
-                return StatusCode(500, new { errors = new[] { message } });
+                // i have to force a 200 here? something upstream appears to be magic causing a 500 if I don't force a 200.
+                return StatusCode(200, new { errors = new[] { message } });
             }
             else
             {

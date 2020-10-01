@@ -57,7 +57,6 @@ namespace Quill.Controllers
             return View();
         }
         
-        // MWCTODO: this doesn't work yet because we aren't routing properly.
         public ViewResult PlayOnly(string playId)
         {
             ViewBag.SessionGuid = Guid.NewGuid();

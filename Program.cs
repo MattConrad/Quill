@@ -24,7 +24,7 @@ namespace Quill
                         .ConfigureLogging((ctx, builder) =>
                         {
                             builder.AddConfiguration(ctx.Configuration.GetSection("Logging"));
-                            // MWCTODO: ContentRootPath is confusing name, but close to what we want. add AppData/logs/ though, maybe.
+                            // while ContentRootPath is a confusing name, it's actually what we want. see further path config in appsettings.json.
                             builder.AddFile(o => o.RootPath = ctx.HostingEnvironment.ContentRootPath);
                         })
                         .UseStartup<Startup>();
