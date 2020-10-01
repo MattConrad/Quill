@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Quill.Models;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Ink.Runtime;
+using Quill.Models;
 
 namespace Quill.Controllers
 {
@@ -257,38 +258,28 @@ namespace Quill.Controllers
             return message.Replace(expectedPrefix, "");
         }
         
-        // MWCTODO: error format has changed, this will need reworked.
         private static List<CateError> GetInklecateErrors(string errorMessage)
         {
             List<CateError> errs = new List<CateError>();
-            
-            string target = "ERROR: line";
-            int current = errorMessage.IndexOf(target);
-            //we expect an error set that starts with the target, if we get something weird, send the original message with no parsing.
-            if (current != 0)
+
+            // wow, this is the first use of LINQ! apparently we never used it at all in the original version of Quill.
+            string[] lineNumsWithErrors = Regex.Split(errorMessage, @"ERROR: '.*?\.ink' ")
+                .Where(e => !string.IsNullOrWhiteSpace(e))
+                .ToArray();
+
+            // we're expecting a certain format in the split results: if it doesn't look like we got it, bail out and send back the whole error message as a single error
+            if (lineNumsWithErrors.Any(lwe => !Regex.IsMatch(lwe, @"^line \d+?:")))
             {
                 errs.Add(new CateError() { Message = errorMessage, LineNumber = -1 });
                 return errs;
             }
-            
-            //this regex isn't very fancy, but (so far) InkleCate err format is simple & predictable and it works.
-            Regex reLineNum = new Regex(@"\d+");
-            int next = 0;
-            int bailout = 0;
-            while(bailout < 100)
-            {
-                next = errorMessage.IndexOf(target, current + 1);
-                if (next < 0) break;
-                
-                AddCateError(errorMessage, current, next - current, reLineNum, ref errs);                
 
-                current = next;
-                bailout++;
-            }
-            
-            AddCateError(errorMessage, current, errorMessage.Length - current, reLineNum, ref errs);
-            
-            return errs;
+            // we've got good format, break up the error message into CateErrors with line numbers.
+            return lineNumsWithErrors
+                .Select(lwe => new { lineInfo = lwe.Split(':')[0], lwe })
+                .Select(n => new { lineNumAsString = n.lineInfo.Split(' ')[1], n.lwe })
+                .Select(n => new CateError { LineNumber = int.Parse(n.lineNumAsString), Message = n.lwe })
+                .ToList();
         }
 
         private static string GetStoryExceptionMessage(StoryException x)
