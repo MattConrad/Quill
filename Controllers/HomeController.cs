@@ -171,33 +171,14 @@ namespace Quill.Controllers
         {
             try
             {
-                string newInkPath = _rootPath + _rawInksDirectory + sessionGuid + ".ink";
                 string newJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
 
-                System.IO.File.WriteAllText(newInkPath, inktext);
+                // MWCTODO: holy moly, it works. needs some testing, looks like using the compiler breaks GetInklecateErrors() again, but working proof of concept, not bad.
+                var compiler = new Ink.Compiler(inktext, null);
 
-                var processStartInfo = new ProcessStartInfo()
-                {
-                    Arguments = " -o " + newJsonPath + " " + newInkPath,
-                    FileName = _rootPath + _libExePath,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false
-                };
+                var story = compiler.Compile();
 
-                Process p = new Process();
-                p.StartInfo = processStartInfo;
-                p.Start();
-
-                //let's hope any syntax errs are found w/in a second
-                System.Threading.Thread.Sleep(1000);
-                string errorMessage = p.StandardError.ReadToEnd();
-                string outputMessage = p.StandardOutput.ReadToEnd();
-                p.WaitForExit(2000);
-
-                if (!string.IsNullOrEmpty(errorMessage)) throw new InvalidOperationException(errorMessage);
-                if (!string.IsNullOrEmpty(outputMessage)) throw new InvalidOperationException(outputMessage);
-                if (p.ExitCode != 0) throw new InvalidOperationException("Ink processing crashed. No details are available.");
+                System.IO.File.WriteAllText(newJsonPath, story.ToJson());
 
                 return base.Json(new { });
             }
@@ -209,6 +190,49 @@ namespace Quill.Controllers
                 return base.Json(new { errors });
             }
         }
+
+        //public JsonResult PlayInk(string inktext, Guid sessionGuid)
+        //{
+        //    try
+        //    {
+        //        string newInkPath = _rootPath + _rawInksDirectory + sessionGuid + ".ink";
+        //        string newJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
+
+        //        System.IO.File.WriteAllText(newInkPath, inktext);
+
+        //        var processStartInfo = new ProcessStartInfo()
+        //        {
+        //            Arguments = " -o " + newJsonPath + " " + newInkPath,
+        //            FileName = _rootPath + _libExePath,
+        //            RedirectStandardOutput = true,
+        //            RedirectStandardError = true,
+        //            UseShellExecute = false
+        //        };
+
+        //        Process p = new Process();
+        //        p.StartInfo = processStartInfo;
+        //        p.Start();
+
+        //        //let's hope any syntax errs are found w/in a second
+        //        System.Threading.Thread.Sleep(1000);
+        //        string errorMessage = p.StandardError.ReadToEnd();
+        //        string outputMessage = p.StandardOutput.ReadToEnd();
+        //        p.WaitForExit(2000);
+
+        //        if (!string.IsNullOrEmpty(errorMessage)) throw new InvalidOperationException(errorMessage);
+        //        if (!string.IsNullOrEmpty(outputMessage)) throw new InvalidOperationException(outputMessage);
+        //        if (p.ExitCode != 0) throw new InvalidOperationException("Ink processing crashed. No details are available.");
+
+        //        return base.Json(new { });
+        //    }
+        //    catch (Exception x)
+        //    {
+        //        // we used to try/catch GetInklecateErrors() as well, but we can let the global error handler handle that improbable error scenario now.
+        //        var errors = GetInklecateErrors(x.Message);
+
+        //        return base.Json(new { errors });
+        //    }
+        //}
 
         /* 
          * private JsonResult methods
