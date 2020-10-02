@@ -9,6 +9,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Quill
 {
+    /* 2020-10-02: notes here because there's not a better place for them right now.
+     * 
+     * this is a rework of the old code to ASP.NET Core 3.1 with a new build of Ink as well. at least on Windows, this is working well so far.
+     * many things have been revised and reworked along the way. some are required (Ink has changed quite a bit since earlier versions) and other things
+     * are improvements I noticed while working or have been meaning to do for a long time.
+     * 
+     * n.b., all the JSON error properties are CateErrors now. 
+     * 
+     * 
+     * 
+     * 
+     */
+
     public class Program
     {
         public static void Main(string[] args)

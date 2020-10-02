@@ -44,6 +44,9 @@
     var $storyStatusDiv;
     
     $(document).ready(function () {
+        // this is an IE test, fixing an IE issue 
+        if (window.document.documentMode) $.ajaxSetup({ cache: false });
+
         $storyMainDiv = $("#story-main-div");
         $storyChoicesDiv = $("#story-choices-div");
 
@@ -67,6 +70,7 @@
     function continueStory(choiceIndex) {
         $("#story-main-div p.new-text").removeClass("new-text");
 
+        // omitting error handling. might change this later if it seems to be a problem (has not been so far)
         $.getJSON(
             continueStoryUrl,
             { "sessionGuid": sessionGuid, "playId": playId, "choiceIndex": choiceIndex },

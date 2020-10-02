@@ -124,8 +124,7 @@ namespace Quill.Controllers
                         + $"with a copy of this error text (/Home/ContinueStory {DateTime.Now})";
                 }
 
-                // MWCTODO: I don't really like having some "errors" be array of strings and others array of CateErrors. 
-                string[] errors = new string[] { message };
+                CateError[] errors = new CateError[] { new CateError { Message = message, LineNumber = -1 } };
                 return base.Json(new { errors });
             }
         }
@@ -196,26 +195,18 @@ namespace Quill.Controllers
                 string outputMessage = p.StandardOutput.ReadToEnd();
                 p.WaitForExit(2000);
 
-                if (!string.IsNullOrEmpty(errorMessage)) throw new InvalidOperationException(FixInkMessages(newInkPath, errorMessage));
-                if (!string.IsNullOrEmpty(outputMessage)) throw new InvalidOperationException(FixInkMessages(newInkPath, outputMessage));
+                if (!string.IsNullOrEmpty(errorMessage)) throw new InvalidOperationException(errorMessage);
+                if (!string.IsNullOrEmpty(outputMessage)) throw new InvalidOperationException(outputMessage);
                 if (p.ExitCode != 0) throw new InvalidOperationException("Ink processing crashed. No details are available.");
 
-                return base.Json(new { errors = new string[] { } });
+                return base.Json(new { });
             }
             catch (Exception x)
             {
-                try
-                {
-                    var errors = GetInklecateErrors(x.Message);
+                // we used to try/catch GetInklecateErrors() as well, but we can let the global error handler handle that improbable error scenario now.
+                var errors = GetInklecateErrors(x.Message);
 
-                    return base.Json(new { errors = errors });
-                }
-                //MWCTODO: this means GetInklecateErrors() threw a new exception, should also write to the internal log (figure out the current netcore way of doing this)
-                catch
-                {
-                    var error = new CateError() { Message = x.Message, LineNumber = 0 };
-                    return base.Json(new { errors = new List<CateError>() { error } });
-                }
+                return base.Json(new { errors });
             }
         }
 
@@ -250,20 +241,13 @@ namespace Quill.Controllers
 
             errs.Add(new CateError() { Message = msg, LineNumber = line });
         }
-
-        //default ink syntax error messages prepend path/file, which is verbose and also useless here.
-        private static string FixInkMessages(string newInkPath, string message)
-        {
-            string expectedPrefix = "'" + newInkPath + "' ";
-            return message.Replace(expectedPrefix, "");
-        }
         
         private static List<CateError> GetInklecateErrors(string errorMessage)
         {
             List<CateError> errs = new List<CateError>();
 
-            // wow, this is the first use of LINQ! apparently we never used it at all in the original version of Quill.
-            string[] lineNumsWithErrors = Regex.Split(errorMessage, @"ERROR: '.*?\.ink' ")
+            // if we've been handling warnings as errors all this time, it's probably ok to continue doing so . . .
+            string[] lineNumsWithErrors = Regex.Split(errorMessage, @"ERROR: '.*?\.ink' |WARNING: '.*?\.ink' ")
                 .Where(e => !string.IsNullOrWhiteSpace(e))
                 .ToArray();
 

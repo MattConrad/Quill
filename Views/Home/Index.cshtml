@@ -92,6 +92,9 @@
     var editor;
 
     $(document).ready(function () {
+        // this is an IE test, fixing an IE issue 
+        if (window.document.documentMode) $.ajaxSetup({ cache: false });
+
         $storyMainDiv = $("#story-main-div");
         $storyChoicesDiv = $("#story-choices-div");
         $storyStatusDiv = $("#story-status-div");
@@ -181,6 +184,7 @@
     }
 
     function getPermalink() {
+        // it's possible that this .post() could return results with errors. for now, this seems unlikely and we don't defend against it.
         $.post(
             getPermalinkUrl,
             { "sessionGuid": sessionGuid },
@@ -261,12 +265,13 @@
                     // for now at least, THESE errors are a simple array of strings. later we may make them fancier and parse them.
                     var $errDiv = $('<div class="alert alert-danger">');
                     for(i = 0, len = response.errors.length; i < len; i++) {
-                        $errDiv.append($('<div class="cate-error">').html(response.errors[i]));
+                        $errDiv.append($('<div class="cate-error">').html(response.errors[i].message));
                     }
                     $inkStatusDiv.append($errDiv);
                     editor.focus();
 
-                    // MWCTODO: in this branch we'd rather not enable the right hand pane. probably. not sure it's important enough to chase, though.
+                    // in a perfect world, errors here would not enable the right hand story pane (presently, they do). however, this isn't serious and not chasing it for now.
+
                 } else {
                     // no errors: our response should be an array of message objects.
                     var currentChoices = processStoryMessages(response);

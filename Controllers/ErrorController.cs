@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Diagnostics;
 using Karambolo.Extensions.Logging.File;
 using Microsoft.Extensions.Logging;
+using Quill.Models;
 
 namespace Quill.Controllers
 {
@@ -35,8 +36,8 @@ namespace Quill.Controllers
 
             if (isAjax)
             {
-                // i have to force a 200 here? something upstream appears to be magic causing a 500 if I don't force a 200.
-                return StatusCode(200, new { errors = new[] { message } });
+                // i have to force a 200 here? something upstream appears to be magically causing a 500 if I don't force a 200.
+                return StatusCode(200, new { errors = new CateError[] { new CateError { Message = message, LineNumber = -1 } } });
             }
             else
             {
