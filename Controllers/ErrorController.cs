@@ -37,7 +37,10 @@ namespace Quill.Controllers
             if (isAjax)
             {
                 // i have to force a 200 here? something upstream appears to be magically causing a 500 if I don't force a 200.
-                return StatusCode(200, new { errors = new CateError[] { new CateError { Message = message, LineNumber = -1 } } });
+                return StatusCode(200, new { errors = new CateError[] { new CateError { 
+                    Message = System.Web.HttpUtility.HtmlEncode(message), 
+                    LineNumber = -1 
+                } } });
             }
             else
             {

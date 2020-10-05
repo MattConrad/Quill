@@ -72,14 +72,7 @@ namespace Quill.Models
         {
             string storyState = story.state.ToJson();
 
-            //trying to get 0-turn saving to work, but no luck.
-            //storyState = storyState.Replace("\"turnIdx\":-1", "\"turnIdx\":0");
-            //storyState = storyState.Replace("\"cPath\":\"\"", "\"cXXXPath\":\"\"");
-
             System.IO.File.WriteAllText(gameStatePath, storyState);
         }
-        
-        
     }
-    
 }

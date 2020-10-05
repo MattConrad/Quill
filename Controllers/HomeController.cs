@@ -22,10 +22,12 @@ namespace Quill.Controllers
         private static readonly string _permaplaysDirectory = "/Permaplays/";
         private static object _lock = new object();
 
+        // for now at least, errors and warnings are combined into a single collection.
+        private List<string> _errorsAndWarnings = new List<string>();
+
         //_rootPath is a filesystem path, for writing .ink/.jsons. _webAppPath is a URL modifier that is used instead of ~ (tilde, ofc, doesn't work with nginx)
         //  tilde handling is under discussion: https://github.com/aspnet/Announcements/issues/57  doesn't quite look like this is speaking to my issue, though.
         private string _rootPath;
-        private string _libExePath;
         private string _webAppPath;
 
         private readonly ILogger<HomeController> _logger;
@@ -35,17 +37,6 @@ namespace Quill.Controllers
             _logger = logger;
 
             _rootPath = System.IO.Directory.GetCurrentDirectory();
-
-            ////if you aren't running win-x64 or linux-x64 you'll need to alter this.
-            //_libExePath = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-            //    ? "/lib/linux-x64/cate-netcore"
-            //    : "/lib/win-x64/cate-netcore.exe";
-
-            // MWCTODO: this isn't updated for linux. it will need to be.
-            //if you aren't running win-x64 or linux-x64 you'll need to alter this.
-            _libExePath = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-                ? "/lib/linux-x64/cate-netcore"
-                : "/lib/win-x64/inklecate.exe";
 
             // MWCTODO: this must be restored + fixed somehow, or maybe there's a better approach by now. this is fundamental, you won't even be able to test without it.
             //_webAppPath = config["WebAppPath"];
@@ -63,17 +54,17 @@ namespace Quill.Controllers
             ViewBag.WebAppPath = _webAppPath;
             return View();
         }
-        
+
         public ViewResult PlayOnly(string playId)
         {
             ViewBag.SessionGuid = Guid.NewGuid();
             ViewBag.WebAppPath = _webAppPath;
             ViewBag.PlayId = playId;
-            
+
             //make sure it's a valid path.
             string inkPath = _rootPath + _permaplaysDirectory + playId + ".json";
             ViewBag.InkFileExists = System.IO.File.Exists(inkPath);
-            
+
             return View();
         }
 
@@ -82,7 +73,7 @@ namespace Quill.Controllers
          * 
          */
 
-        public JsonResult ContinueStory(Guid sessionGuid, string playId, int? choiceIndex) 
+        public JsonResult ContinueStory(Guid sessionGuid, string playId, int? choiceIndex)
         {
             // if we have a playId, this is a permaplay story, and we load it from permaplays instead of inkJsons.
             string inkJsonPath = string.IsNullOrEmpty(playId)
@@ -132,25 +123,25 @@ namespace Quill.Controllers
         public JsonResult GetPermalink(Guid sessionGuid)
         {
             string currentJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
-            
+
             string permaId;
-            lock(_lock)
+            lock (_lock)
             {
                 long ticks = (DateTime.UtcNow - new DateTime(2016, 01, 01)).Ticks;
                 permaId = Helpers.Utils.EncodeTicks(ticks);
                 string permaFilename = _rootPath + _permaplaysDirectory + permaId + ".json";
-                
+
                 //not much chance of collision, but if there is one, bump forward a tick until an open slot found.                
-                while (System.IO.File.Exists(permaFilename)) 
+                while (System.IO.File.Exists(permaFilename))
                 {
                     ticks++;
                     permaId = Helpers.Utils.EncodeTicks(ticks);
                     permaFilename = _rootPath + _permaplaysDirectory + permaId + ".json";
                 }
-                
+
                 System.IO.File.Copy(currentJsonPath, permaFilename);
             }
-            
+
             //http://stackoverflow.com/questions/31617345/what-is-the-asp-net-core-mvc-equivalent-to-request-requesturi
             string[] hostComponents = Request.Host.ToUriComponent().Split(':');
             var builder = new UriBuilder
@@ -169,70 +160,33 @@ namespace Quill.Controllers
 
         public JsonResult PlayInk(string inktext, Guid sessionGuid)
         {
-            try
+            string newInkPath = _rootPath + _rawInksDirectory + sessionGuid + ".ink";
+            string newJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
+
+            // we don't NEED to write the ink to the ink path any more. does cost some resources, could come in handy with troubleshooting.
+            System.IO.File.WriteAllText(newInkPath, inktext);
+
+            var compiler = new Ink.Compiler(inktext, new Ink.Compiler.Options { errorHandler = InkErrorHandler });
+
+            var story = compiler.Compile();
+
+            // we should either have errors/warnings, or a working story. (probably can have warnings + story, but we treat warnings as errors in Quill.)
+            if (_errorsAndWarnings.Any())
             {
-                string newJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
-
-                // MWCTODO: holy moly, it works. needs some testing, looks like using the compiler breaks GetInklecateErrors() again, but working proof of concept, not bad.
-                var compiler = new Ink.Compiler(inktext, null);
-
-                var story = compiler.Compile();
-
+                return base.Json(new { errors = ParseCateErrorsFromErrorStrings(_errorsAndWarnings) });
+            }
+            else if (story != null)
+            {
                 System.IO.File.WriteAllText(newJsonPath, story.ToJson());
 
                 return base.Json(new { });
             }
-            catch (Exception x)
+            else
             {
-                // we used to try/catch GetInklecateErrors() as well, but we can let the global error handler handle that improbable error scenario now.
-                var errors = GetInklecateErrors(x.Message);
-
-                return base.Json(new { errors });
+                throw new InvalidOperationException("Story compilation produced no usable story, and also no errors/warnings. This should never happen. If you get this error more than once, please file an issue at https://github.com/MattConrad/Quill/issues .");
             }
         }
 
-        //public JsonResult PlayInk(string inktext, Guid sessionGuid)
-        //{
-        //    try
-        //    {
-        //        string newInkPath = _rootPath + _rawInksDirectory + sessionGuid + ".ink";
-        //        string newJsonPath = _rootPath + _inkJsonsDirectory + sessionGuid + ".json";
-
-        //        System.IO.File.WriteAllText(newInkPath, inktext);
-
-        //        var processStartInfo = new ProcessStartInfo()
-        //        {
-        //            Arguments = " -o " + newJsonPath + " " + newInkPath,
-        //            FileName = _rootPath + _libExePath,
-        //            RedirectStandardOutput = true,
-        //            RedirectStandardError = true,
-        //            UseShellExecute = false
-        //        };
-
-        //        Process p = new Process();
-        //        p.StartInfo = processStartInfo;
-        //        p.Start();
-
-        //        //let's hope any syntax errs are found w/in a second
-        //        System.Threading.Thread.Sleep(1000);
-        //        string errorMessage = p.StandardError.ReadToEnd();
-        //        string outputMessage = p.StandardOutput.ReadToEnd();
-        //        p.WaitForExit(2000);
-
-        //        if (!string.IsNullOrEmpty(errorMessage)) throw new InvalidOperationException(errorMessage);
-        //        if (!string.IsNullOrEmpty(outputMessage)) throw new InvalidOperationException(outputMessage);
-        //        if (p.ExitCode != 0) throw new InvalidOperationException("Ink processing crashed. No details are available.");
-
-        //        return base.Json(new { });
-        //    }
-        //    catch (Exception x)
-        //    {
-        //        // we used to try/catch GetInklecateErrors() as well, but we can let the global error handler handle that improbable error scenario now.
-        //        var errors = GetInklecateErrors(x.Message);
-
-        //        return base.Json(new { errors });
-        //    }
-        //}
 
         /* 
          * private JsonResult methods
@@ -252,44 +206,24 @@ namespace Quill.Controllers
         }
 
         /* 
+         * Ink event handlers
+         *  
+         */
+
+        private void InkErrorHandler(string message, Ink.ErrorType errorType)
+        {
+            // ignore errors of type "Author", add both errors and warnings to the error collection.
+            if (errorType == Ink.ErrorType.Author) return;
+
+            _errorsAndWarnings.Add(message);
+        }
+
+        /* 
          * all other private helper methods
          *  
          */
 
-        private static void AddCateError(string errorMessage, int start, int end, Regex re, ref List<CateError> errs)
-        {
-            int line = -1;
-            string msg = errorMessage.Substring(start, end);
-            string lineStr = re.Match(msg).Value;
-            if (!string.IsNullOrEmpty(lineStr)) line = int.Parse(lineStr);
-
-            errs.Add(new CateError() { Message = msg, LineNumber = line });
-        }
-        
-        private static List<CateError> GetInklecateErrors(string errorMessage)
-        {
-            List<CateError> errs = new List<CateError>();
-
-            // if we've been handling warnings as errors all this time, it's probably ok to continue doing so . . .
-            string[] lineNumsWithErrors = Regex.Split(errorMessage, @"ERROR: '.*?\.ink' |WARNING: '.*?\.ink' ")
-                .Where(e => !string.IsNullOrWhiteSpace(e))
-                .ToArray();
-
-            // we're expecting a certain format in the split results: if it doesn't look like we got it, bail out and send back the whole error message as a single error
-            if (lineNumsWithErrors.Any(lwe => !Regex.IsMatch(lwe, @"^line \d+?:")))
-            {
-                errs.Add(new CateError() { Message = errorMessage, LineNumber = -1 });
-                return errs;
-            }
-
-            // we've got good format, break up the error message into CateErrors with line numbers.
-            return lineNumsWithErrors
-                .Select(lwe => new { lineInfo = lwe.Split(':')[0], lwe })
-                .Select(n => new { lineNumAsString = n.lineInfo.Split(' ')[1], n.lwe })
-                .Select(n => new CateError { LineNumber = int.Parse(n.lineNumAsString), Message = n.lwe })
-                .ToList();
-        }
-
+        // considered removing this and using story.onError, but runtime errors are (i think) rare and I don't the rewriting is warranted. as is for now.
         private static string GetStoryExceptionMessage(StoryException x)
         {
             // i think these exceptions will always have the token text, but i'm not 100% sure. if we don't find the token, send back StoryException.Message entire.
@@ -302,6 +236,23 @@ namespace Quill.Controllers
                 : x.Message;
         }
 
-        
+        private static List<CateError> ParseCateErrorsFromErrorStrings(IEnumerable<string> errorStrings)
+        {
+            return errorStrings
+                .Select(s => new { 
+                    errorString = s.Replace("ERROR: ", "").Replace("WARNING: ", ""), 
+                    matches = Regex.Match(s, @": line (\d+):") 
+                })
+                .Select(n => new { 
+                    n.errorString, 
+                    lineNumAsString = n.matches.Groups.Count > 1 ? n.matches.Groups[1].Value : "-1" 
+                })
+                .Select(n => new CateError
+                {
+                    Message = System.Web.HttpUtility.HtmlEncode(n.errorString),
+                    LineNumber = int.Parse(n.lineNumAsString)
+                })
+                .ToList();
+        }
     }
 }
