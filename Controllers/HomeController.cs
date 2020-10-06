@@ -25,22 +25,22 @@ namespace Quill.Controllers
         // for now at least, errors and warnings are combined into a single collection.
         private List<string> _errorsAndWarnings = new List<string>();
 
-        //_rootPath is a filesystem path, for writing .ink/.jsons. _webAppPath is a URL modifier that is used instead of ~ (tilde, ofc, doesn't work with nginx)
-        //  tilde handling is under discussion: https://github.com/aspnet/Announcements/issues/57  doesn't quite look like this is speaking to my issue, though.
+        // _rootPath is a filesystem path, for writing .inks/.jsons. 
         private string _rootPath;
+        // _webAppPath is a URL modifier that is used like ~ in IIS. (tilde, ofc, doesn't work with nginx)
         private string _webAppPath;
 
+        private IConfiguration _configuration;
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IConfiguration configuration)
         {
+            _configuration = configuration;
             _logger = logger;
 
             _rootPath = System.IO.Directory.GetCurrentDirectory();
 
-            // MWCTODO: this must be restored + fixed somehow, or maybe there's a better approach by now. this is fundamental, you won't even be able to test without it.
-            //_webAppPath = config["WebAppPath"];
-            _webAppPath = @"/";
+            _webAppPath = _configuration["WebAppPath"];
         }
 
         /* 
@@ -52,6 +52,7 @@ namespace Quill.Controllers
         {
             ViewBag.SessionGuid = Guid.NewGuid();
             ViewBag.WebAppPath = _webAppPath;
+
             return View();
         }
 
@@ -171,6 +172,8 @@ namespace Quill.Controllers
             var story = compiler.Compile();
 
             // we should either have errors/warnings, or a working story. (probably can have warnings + story, but we treat warnings as errors in Quill.)
+            // in a better world, we would send back story, errors, and warnings as separate object properties, and handle whatever we got, but that would 
+            //   take some rethink and rework and i am out of steam on that. for now, anyway.
             if (_errorsAndWarnings.Any())
             {
                 return base.Json(new { errors = ParseCateErrorsFromErrorStrings(_errorsAndWarnings) });
@@ -239,11 +242,13 @@ namespace Quill.Controllers
         private static List<CateError> ParseCateErrorsFromErrorStrings(IEnumerable<string> errorStrings)
         {
             return errorStrings
-                .Select(s => new { 
+                .Select(s => new 
+                { 
                     errorString = s.Replace("ERROR: ", "").Replace("WARNING: ", ""), 
                     matches = Regex.Match(s, @": line (\d+):") 
                 })
-                .Select(n => new { 
+                .Select(n => new 
+                { 
                     n.errorString, 
                     lineNumAsString = n.matches.Groups.Count > 1 ? n.matches.Groups[1].Value : "-1" 
                 })
