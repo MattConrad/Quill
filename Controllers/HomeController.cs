@@ -12,8 +12,6 @@ using Quill.Models;
 
 namespace Quill.Controllers
 {
-    // MWCTODO: when you deploy to linux, be sure to set up upstart and tmpreaper, both, correctly.
-
     public class HomeController : Controller
     {
         public static readonly string _inkJsonsDirectory = "/AppData/InkJsons/";
