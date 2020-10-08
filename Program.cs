@@ -17,9 +17,13 @@ namespace Quill
      * 
      * n.b., all the JSON error properties are CateErrors now. 
      * 
-     * we got rid of the inklecate binaries! hurray! some things get simpler after this.
+     * we got rid of the inklecate binaries! hurray! some things get simpler after this. upgrades should be a lot easier.
      * 
      * rethinking error handling so the js client can receive errors, warnings, and story as different properties would be good to do, but i'm out of steam for that for now.
+     * 
+     * on linux, "systemd" is quite a bit different than the previous "upstart". a few things that may be helpful if you need to mess with this:
+     * the directory /etc/systemd/system and the quill.service file within it
+     * the commands "systemctl stop quill.service", "systemctl stop quill.service", and (if you alter the service file) "systemctl daemon-reload".
      * 
      */
 
